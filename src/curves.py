@@ -101,3 +101,42 @@ def von_misses_tuning_function(x: np.ndarray, kappa: float, theta: float, maxRes
     dist = (dist/max(dist)) * (maxResponse - minResponse) + minResponse
     
     return dist
+
+
+
+##! =====================================
+##!     Random Generation for 1D:
+##! =====================================
+
+
+def generate_random_curves(
+        tuning_function: Callable[[np.ndarray, float], np.ndarray],  # the tuning function to use
+        x: np.ndarray,  # a 1D numpy array of input values
+        nCurves: int,  # the number of output curves to randomly generate
+        parameters: List[Union[float, Tuple[float, float]]],  # a list of floats or 2-tuples of floats (single float = parameter held constant, tuple = range of values for that parameter)
+    ) -> List[np.ndarray]:
+    
+    generatedCurves = []
+    
+    for _ in range(nCurves):
+        curveParams = [n if type(n) in [float, int] else random.uniform(*n) for n in parameters]
+        try:
+            generatedCurves.append(tuning_function(x, *curveParams))
+        except TypeError:  # will occur if the incorrect amount of parameters have been provided for the chosen tuning_function
+            raise TypeError(f"Incorrect number of parameters provided for {tuning_function.__name__}!")
+        except Exception as e:
+            raise ValueError(f"Using parameters {str(curveParams)} with {tuning_function.__name__} resulted in the following exception:\n{str(e)}\nCheck your parameters are all valid for the chosen tuning function!")
+    
+    return generatedCurves
+
+
+def generate_random_sigmoid_curves(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
+    return generate_random_curves(sigmoid_tuning, x, nCurves, parameters)
+
+
+def generate_random_gaussian_curves(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
+    return generate_random_curves(gaussian_tuning_function, x, nCurves, parameters)
+
+
+def generate_random_von_mises_curves(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
+    return generate_random_curves(von_misses_tuning_function, x, nCurves, parameters)
