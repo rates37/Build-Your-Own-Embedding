@@ -15,7 +15,10 @@ import numpy as np
 import random
 
 # Type hinting:
-from typing import List, Union, Tuple, Callable
+from typing import List, Union, Tuple, Callable, Iterable
+
+# import parameters:
+from parameters import Parameter
 
 
 
@@ -130,7 +133,7 @@ def generate_random_curves(
     return generatedCurves
 
 
-def generate_random_sigmoid_curves(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
+def generate_random_sigmoid_curves_old(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
     return generate_random_curves(sigmoid_tuning, x, nCurves, parameters)
 
 
@@ -140,3 +143,39 @@ def generate_random_gaussian_curves(x: np.ndarray, nCurves: int, parameters: Lis
 
 def generate_random_von_mises_curves(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
     return generate_random_curves(von_misses_tuning_function, x, nCurves, parameters)
+
+
+
+
+##! =====================================
+##!     New Random Generation for 1D:
+##!      Using Parameter Class
+##! =====================================
+def generate_random_sigmoid_curves(
+        x: np.ndarray,  # a 1D numpy array of input values
+        steepness: Union[float, Parameter],
+        pivot:  Union[float, Parameter],
+        maxResponse:  Union[float, Parameter],
+        minResponse:  Union[float, Parameter]
+    ) -> List[np.ndarray]:
+    # convert all parameters to iterables:
+    def conv_to_iter(obj) -> Iterable:
+        try:
+            iter(obj)
+            return obj
+        except:
+            return [obj]
+    steepness = conv_to_iter(steepness)
+    pivot = conv_to_iter(pivot)
+    maxResponse = conv_to_iter(maxResponse)
+    minResponse = conv_to_iter(minResponse)
+    
+    # generate outputs:
+    outputs = []
+    for s in steepness:
+        for p in pivot:
+            for mi in minResponse:
+                for ma in maxResponse:
+                    outputs.append(sigmoid_tuning(x, s, p ,ma, mi))
+    
+    return outputs
