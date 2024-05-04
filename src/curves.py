@@ -179,3 +179,24 @@ def generate_random_sigmoid_curves(
                     outputs.append(sigmoid_tuning(x, s, p ,ma, mi))
     
     return outputs
+
+if __name__ == "__main__":
+    from parameters import *
+    x = np.linspace(-5, 5, 100)  # Sample input values
+    steepness = UniformRange(1, 3, 3)
+    pivot = UniformRange(-2, 2, 2)
+    min_response = UniformRange(0.1, 0.3, 2)
+    max_response = UniformRange(0.7, 0.9, 2)
+
+    outputs = generate_random_sigmoid_curves(x, steepness, pivot, min_response, max_response)
+    
+    import matplotlib.pyplot as plt
+    fig: plt.Figure = plt.figure(figsize=(10,5))
+    for curve in outputs:
+        plt.plot(x, curve, '-', color="gray")
+    # plt.plot(x, idealResponse, '-', color="black", label=r"Ideal orientation")
+    plt.xlabel(r"Orientation")
+    plt.ylabel(r"Response")
+    plt.title(r"Plot of multiple tuning curves")
+    plt.legend()
+    plt.show()
