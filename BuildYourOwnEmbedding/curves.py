@@ -141,7 +141,7 @@ def generate_random_gaussian_curves_old(x: np.ndarray, nCurves: int, parameters:
     return generate_random_curves(gaussian_tuning_function, x, nCurves, parameters)
 
 
-def generate_random_von_mises_curves(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
+def generate_random_von_mises_curves_old(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
     return generate_random_curves(von_misses_tuning_function, x, nCurves, parameters)
 
 
