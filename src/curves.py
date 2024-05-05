@@ -18,7 +18,7 @@ import random
 from typing import List, Union, Tuple, Callable, Iterable
 
 # import parameters:
-from parameters import Parameter
+from .parameters import Parameter
 
 
 
@@ -160,10 +160,10 @@ def conv_to_iter(obj) -> Iterable:
 
 def generate_random_sigmoid_curves(
         x: np.ndarray,
-        steepness: Union[float, Parameter],
-        pivot:  Union[float, Parameter],
-        maxResponse:  Union[float, Parameter],
-        minResponse:  Union[float, Parameter]
+        steepness: Union[int, float, Parameter, Iterable],
+        pivot:  Union[int, float, Parameter, Iterable],
+        maxResponse:  Union[int, float, Parameter, Iterable],
+        minResponse:  Union[int, float, Parameter, Iterable]
     ) -> List[np.ndarray]:
     # convert all parameters to iterables:
     steepness = conv_to_iter(steepness)
@@ -180,12 +180,13 @@ def generate_random_sigmoid_curves(
                     outputs.append(sigmoid_tuning(x, s, p ,ma, mi))
     return outputs
 
+
 def generate_random_gaussian_curves(
         x: np.ndarray,
-        mu: Union[float, Parameter],
-        sigma:  Union[float, Parameter],
-        maxResponse:  Union[float, Parameter],
-        minResponse:  Union[float, Parameter]
+        mu: Union[int, float, Parameter, Iterable],
+        sigma:  Union[int, float, Parameter, Iterable],
+        maxResponse:  Union[int, float, Parameter, Iterable],
+        minResponse:  Union[int, float, Parameter, Iterable]
     ) -> List[np.ndarray]:
     # convert all parameters to iterables:
     mu = conv_to_iter(mu)
@@ -202,6 +203,29 @@ def generate_random_gaussian_curves(
                     outputs.append(gaussian_tuning_function(x, m, s ,ma, mi))
     return outputs
 
+
+def generate_random_von_mises_curves(
+        x: np.ndarray,
+        kappa: Union[int, float, Parameter, Iterable],
+        theta:  Union[int, float, Parameter, Iterable],
+        maxResponse:  Union[int, float, Parameter, Iterable],
+        minResponse:  Union[int, float, Parameter, Iterable],
+    ) -> List[np.ndarray]:
+    # convert all parameters to iterables:
+    kappa = conv_to_iter(kappa)
+    theta = conv_to_iter(theta)
+    maxResponse = conv_to_iter(maxResponse)
+    minResponse = conv_to_iter(minResponse)
+    
+    # generate outputs:
+    outputs = []
+    for k in kappa:
+        for t in theta:
+            for mi in minResponse:
+                for ma in maxResponse:
+                    outputs.append(von_misses_tuning_function(x, k, t ,ma, mi))
+    return outputs
+
 if __name__ == "__main__":
     from parameters import *
     x = np.linspace(-5, 5, 100)  # Sample input values
@@ -215,7 +239,7 @@ if __name__ == "__main__":
     
     mu = UniformRange(-2, 2, 2)
     sigma = UniformRange(0.5, 3, 3)
-    outputs = generate_random_gaussian_curves(x, mu, sigma, max_response, min_response)
+    outputs = generate_random_von_mises_curves(x, mu, sigma, max_response, min_response)
     
     import matplotlib.pyplot as plt
     fig: plt.Figure = plt.figure(figsize=(10,5))
