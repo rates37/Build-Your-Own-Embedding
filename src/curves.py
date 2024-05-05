@@ -137,7 +137,7 @@ def generate_random_sigmoid_curves_old(x: np.ndarray, nCurves: int, parameters: 
     return generate_random_curves(sigmoid_tuning, x, nCurves, parameters)
 
 
-def generate_random_gaussian_curves(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
+def generate_random_gaussian_curves_old(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
     return generate_random_curves(gaussian_tuning_function, x, nCurves, parameters)
 
 
@@ -151,20 +151,21 @@ def generate_random_von_mises_curves(x: np.ndarray, nCurves: int, parameters: Li
 ##!     New Random Generation for 1D:
 ##!      Using Parameter Class
 ##! =====================================
+def conv_to_iter(obj) -> Iterable:
+    try:
+        iter(obj)
+        return obj
+    except:
+        return [obj]
+
 def generate_random_sigmoid_curves(
-        x: np.ndarray,  # a 1D numpy array of input values
+        x: np.ndarray,
         steepness: Union[float, Parameter],
         pivot:  Union[float, Parameter],
         maxResponse:  Union[float, Parameter],
         minResponse:  Union[float, Parameter]
     ) -> List[np.ndarray]:
     # convert all parameters to iterables:
-    def conv_to_iter(obj) -> Iterable:
-        try:
-            iter(obj)
-            return obj
-        except:
-            return [obj]
     steepness = conv_to_iter(steepness)
     pivot = conv_to_iter(pivot)
     maxResponse = conv_to_iter(maxResponse)
@@ -177,7 +178,28 @@ def generate_random_sigmoid_curves(
             for mi in minResponse:
                 for ma in maxResponse:
                     outputs.append(sigmoid_tuning(x, s, p ,ma, mi))
+    return outputs
+
+def generate_random_gaussian_curves(
+        x: np.ndarray,
+        mu: Union[float, Parameter],
+        sigma:  Union[float, Parameter],
+        maxResponse:  Union[float, Parameter],
+        minResponse:  Union[float, Parameter]
+    ) -> List[np.ndarray]:
+    # convert all parameters to iterables:
+    mu = conv_to_iter(mu)
+    sigma = conv_to_iter(sigma)
+    maxResponse = conv_to_iter(maxResponse)
+    minResponse = conv_to_iter(minResponse)
     
+    # generate outputs:
+    outputs = []
+    for m in mu:
+        for s in sigma:
+            for mi in minResponse:
+                for ma in maxResponse:
+                    outputs.append(gaussian_tuning_function(x, m, s ,ma, mi))
     return outputs
 
 if __name__ == "__main__":
@@ -190,11 +212,15 @@ if __name__ == "__main__":
 
     outputs = generate_random_sigmoid_curves(x, steepness, pivot, min_response, max_response)
     
+    
+    mu = UniformRange(-2, 2, 2)
+    sigma = UniformRange(0.5, 3, 3)
+    outputs = generate_random_gaussian_curves(x, mu, sigma, max_response, min_response)
+    
     import matplotlib.pyplot as plt
     fig: plt.Figure = plt.figure(figsize=(10,5))
     for curve in outputs:
         plt.plot(x, curve, '-', color="gray")
-    # plt.plot(x, idealResponse, '-', color="black", label=r"Ideal orientation")
     plt.xlabel(r"Orientation")
     plt.ylabel(r"Response")
     plt.title(r"Plot of multiple tuning curves")
