@@ -84,7 +84,7 @@ def sigmoid_tuning(x: np.ndarray, steepness: float, pivot: float, maxResponse: f
     return dist
 
 
-def von_misses_tuning_function(x: np.ndarray, kappa: float, theta: float, maxResponse: float=1, minResponse: float=0) -> np.ndarray:
+def von_mises_tuning_function(x: np.ndarray, kappa: float, theta: float, maxResponse: float=1, minResponse: float=0) -> np.ndarray:
     """Creates a shifted scaled von-mises distribution
 
     Args:
@@ -142,7 +142,7 @@ def generate_random_gaussian_curves_old(x: np.ndarray, nCurves: int, parameters:
 
 
 def generate_random_von_mises_curves_old(x: np.ndarray, nCurves: int, parameters: List[Union[float, Tuple[float, float]]]) -> List[np.ndarray]:
-    return generate_random_curves(von_misses_tuning_function, x, nCurves, parameters)
+    return generate_random_curves(von_mises_tuning_function, x, nCurves, parameters)
 
 
 
@@ -223,7 +223,7 @@ def generate_random_von_mises_curves(
         for t in theta:
             for mi in minResponse:
                 for ma in maxResponse:
-                    outputs.append(von_misses_tuning_function(x, k, t ,ma, mi))
+                    outputs.append(von_mises_tuning_function(x, k, t ,ma, mi))
     return outputs
 
 if __name__ == "__main__":
