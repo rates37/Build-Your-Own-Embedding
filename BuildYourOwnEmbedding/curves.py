@@ -158,7 +158,7 @@ def conv_to_iter(obj) -> Iterable:
     except:
         return [obj]
 
-def generate_random_sigmoid_curves(
+def generate_sigmoid_curves(
         x: np.ndarray,
         steepness: Union[int, float, Parameter, Iterable],
         pivot:  Union[int, float, Parameter, Iterable],
@@ -181,7 +181,7 @@ def generate_random_sigmoid_curves(
     return outputs
 
 
-def generate_random_gaussian_curves(
+def generate_gaussian_curves(
         x: np.ndarray,
         mu: Union[int, float, Parameter, Iterable],
         sigma:  Union[int, float, Parameter, Iterable],
@@ -204,7 +204,7 @@ def generate_random_gaussian_curves(
     return outputs
 
 
-def generate_random_von_mises_curves(
+def generate_von_mises_curves(
         x: np.ndarray,
         kappa: Union[int, float, Parameter, Iterable],
         theta:  Union[int, float, Parameter, Iterable],
@@ -226,6 +226,8 @@ def generate_random_von_mises_curves(
                     outputs.append(von_mises_tuning_function(x, k, t ,ma, mi))
     return outputs
 
+
+
 if __name__ == "__main__":
     from parameters import *
     x = np.linspace(-5, 5, 100)  # Sample input values
@@ -234,12 +236,12 @@ if __name__ == "__main__":
     min_response = UniformRange(0.1, 0.3, 2)
     max_response = UniformRange(0.7, 0.9, 2)
 
-    outputs = generate_random_sigmoid_curves(x, steepness, pivot, min_response, max_response)
+    outputs = generate_sigmoid_curves(x, steepness, pivot, min_response, max_response)
     
     
     mu = UniformRange(-2, 2, 2)
     sigma = UniformRange(0.5, 3, 3)
-    outputs = generate_random_von_mises_curves(x, mu, sigma, max_response, min_response)
+    outputs = generate_von_mises_curves(x, mu, sigma, max_response, min_response)
     
     import matplotlib.pyplot as plt
     fig: plt.Figure = plt.figure(figsize=(10,5))
