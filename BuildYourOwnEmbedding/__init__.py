@@ -1,2 +1,2 @@
 from . import parameters
-from . import curves
+from . import responses

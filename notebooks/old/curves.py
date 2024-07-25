@@ -18,7 +18,7 @@ import random
 from typing import List, Union, Tuple, Callable, Iterable
 
 # import parameters:
-from .parameters import Parameter
+from ...BuildYourOwnEmbedding.parameters import Parameter
 
 
 
