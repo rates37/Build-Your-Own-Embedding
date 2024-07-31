@@ -4,9 +4,11 @@ from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 from typing import Union, Dict, Tuple, Any, Type, Callable, List
-from .parameters import Parameter
 import inspect
 import itertools
+
+from .parameters import Parameter
+from .functional import inverse_correlation
 
 ##! =====================================
 ##!             Responses:
@@ -263,14 +265,21 @@ class ResponseSet:
         else:
             self.responses = []
 
-    def compute_rdm(self, dissimilarity_metric: Callable[[npt.ArrayLike, npt.ArrayLike], npt.number]) -> npt.ArrayLike:
+    def compute_rdm(
+        self,
+        dissimilarity_metric: Callable[
+            [npt.ArrayLike, npt.ArrayLike], npt.number
+        ] = inverse_correlation,
+    ) -> npt.ArrayLike:
         n: int = len(self.responses)
-        rdm: np.ndarray = np.zeros((n,n))
-        
+        rdm: np.ndarray = np.zeros((n, n))
+
         for i in range(n):
-            for j in range(i+1, n):
-                rdm[i, j] = rdm[j,i] = dissimilarity_metric(self.responses[i].response, self.responses[j].response)
-        
+            for j in range(i + 1, n):
+                rdm[i, j] = rdm[j, i] = dissimilarity_metric(
+                    self.responses[i].response, self.responses[j].response
+                )
+
         return rdm
 
 
