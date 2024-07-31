@@ -263,7 +263,15 @@ class ResponseSet:
         else:
             self.responses = []
 
-    pass
+    def compute_rdm(self, dissimilarity_metric: Callable[[npt.ArrayLike, npt.ArrayLike], npt.number]) -> npt.ArrayLike:
+        n: int = len(self.responses)
+        rdm: np.ndarray = np.zeros((n,n))
+        
+        for i in range(n):
+            for j in range(i+1, n):
+                rdm[i, j] = rdm[j,i] = dissimilarity_metric(self.responses[i].response, self.responses[j].response)
+        
+        return rdm
 
 
 if __name__ == "__main__":
