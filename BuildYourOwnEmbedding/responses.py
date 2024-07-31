@@ -6,6 +6,8 @@ import numpy.typing as npt
 from typing import Union, Dict, Tuple, Any, Type, Callable, List
 import inspect
 import itertools
+import mplcursors
+import matplotlib.pyplot as plt
 
 from .parameters import Parameter
 from .functional import inverse_correlation
@@ -225,6 +227,7 @@ class ResponseManager:
             params=responseParams,
             response=responseValues,
             responseFunction=self.responseClasses.__name__,
+            x=x,
         )
 
     def generate_responses(self, x: npt.NDArray) -> List[ResponseData]:
@@ -255,6 +258,13 @@ class ResponseData:
     params: Dict[str, npt.NDArray]
     response: npt.NDArray
     responseFunction: str
+    x: npt.NDArray
+
+    def __str__(self) -> str:
+        return f"{self.responseFunction}:\n" + "\n".join(
+            f"{paramName} = {self.params[paramName]}"
+            for paramName in self.params.keys()
+        )
 
 
 # stores a set of responses
@@ -282,6 +292,48 @@ class ResponseSet:
 
         return rdm
 
+    def plot_responses(
+        self,
+        figsize: Tuple[int] = (7, 7),
+        xlabel: str = "Stimuli",
+        ylabel: str = "Response",
+        title: str = "Responses",
+        grid: bool = False,
+        hoverEffects: bool = True,  # if false will not add hover effect to plot
+    ) -> None:
+
+        # plot the responses:
+        plt.figure(figsize=figsize)
+        plottedResponses = []
+        for i in range(len(self.responses)):
+            (plottedResponse,) = plt.plot(
+                self.responses[i].x, self.responses[i].response
+            )
+            plottedResponses.append(plottedResponse)
+
+        plt.xlabel(xlabel=xlabel)
+        plt.ylabel(ylabel=ylabel)
+        plt.title(label=title)
+        plt.grid(visible=grid)
+
+        if hoverEffects:
+            cursor = mplcursors.cursor(hover=True)
+
+            @cursor.connect("add")
+            def on_add(selectedResponse) -> None:
+                curve = selectedResponse.artist
+                idx = plottedResponses.index(curve)
+
+                # set annotation to show formatted parameters:
+                # todo
+                selectedResponse.annotation.set(text=f"{str(self.responses[idx])}")
+                selectedResponse.annotation.get_bbox_patch().set(
+                    fc="white", alpha=0.8
+                )  # todo: make these parameters variable
+
+        plt.show()
+        pass
+
 
 if __name__ == "__main__":
     a = VonMisesResponse(1, 0)
@@ -300,7 +352,7 @@ if __name__ == "__main__":
     # plt.show()
 
     # example of generating large sets of data by varying parameters:
-    meanParam: Parameter = UniformRangeParameter(-2, 2, numSamples=4)
+    meanParam: Parameter = UniformRangeParameter(-2, 2, numSamples=5)
     stdParam: Parameter = FixedParameterSet([0.5, 1.0, 1.5])
     gaussianResponseManager = ResponseManager(
         GaussianResponse, mean=meanParam, std=stdParam
@@ -309,3 +361,5 @@ if __name__ == "__main__":
     for response in gaussianResponses:
         plt.plot(x, response.response)
     plt.show()
+    responseSet = ResponseSet(gaussianResponses)
+    responseSet.plot_responses()
