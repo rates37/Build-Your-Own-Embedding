@@ -1,5 +1,7 @@
 import numpy as np
 import numpy.typing as npt
+from typing import List, Union, Tuple
+import matplotlib.pyplot as plt
 
 
 ##! =====================================
@@ -29,3 +31,27 @@ def cosine_similarity(
     x1: npt.NDArray, x2: npt.NDArray, dtype: npt.DTypeLike = np.float64
 ) -> np.number:
     return dtype(np.dot(x1, x2) / (np.linalg.norm(x1) * np.linalg.norm(x2)))
+
+
+##! =====================================
+##!         RDM-Related Functions:
+##! =====================================
+def plot_rdm(
+    rdm: npt.NDArray,
+    labels: Union[List[str], None] = None,
+    cmap: str = "viridis",
+    title: str = None,
+    figsize: Tuple[int] = (7, 7),
+    dissimilarityLabel: str = "Dissimilarity",
+) -> None:
+    title = "RDM of Tuning Curves" if title is None else title
+    fig: plt.Figure = plt.figure(figsize=figsize)
+
+    plt.imshow(rdm, cmap=cmap)
+    plt.colorbar(label=dissimilarityLabel)
+    plt.title(title)
+
+    if labels is not None:
+        plt.xticks(range(len(labels)), labels, rotation=75, ha="left")
+        plt.yticks(range(len(labels)), labels)
+    plt.show()
