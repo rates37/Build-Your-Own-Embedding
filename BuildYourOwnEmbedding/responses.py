@@ -25,7 +25,7 @@ class ResponseFunction(ABC):
         Args:
             **kwargs (Any): Named arguments for parameter values.
         """
-        self.params: Dict = kwargs # Store all parameters for general use
+        self.params: Dict = kwargs  # Store all parameters for general use
 
     @abstractmethod
     def evaluate(self, x: npt.NDArray) -> npt.NDArray:
@@ -177,8 +177,7 @@ class ResponseManager:
         """
         self.responseClasses: Type[ResponseFunction] = responseClasses
         self.parameters: Dict[str, Parameter] = parameters
-    
-    
+
     def _get_response_parameters(self) -> List[str]:
         """
         Gets the names of the parameters from the response class' __init__ method
@@ -186,8 +185,10 @@ class ResponseManager:
         Returns:
             List[str]: A list of parameter names
         """
-        return list(inspect.signature(self.responseClasses.__init__).parameters.keys())[1:]
-    
+        return list(inspect.signature(self.responseClasses.__init__).parameters.keys())[
+            1:
+        ]
+
     def _get_combinations(self) -> List[Dict[str, Any]]:
         """
         Gets all combinations of parameter values based on the input parameters
@@ -198,10 +199,14 @@ class ResponseManager:
         # paramValuesDict = {str(i): param.get_values() for i, param in enumerate(self.parameters)} #!
         paramValuesDict = self.parameters
         paramNames = self._get_response_parameters()
-        paramCombinations = itertools.product(*[p.get_values() for p in [*paramValuesDict.values()]])
+        paramCombinations = itertools.product(
+            *[p.get_values() for p in [*paramValuesDict.values()]]
+        )
         return [dict(zip(paramNames, paramCombo)) for paramCombo in paramCombinations]
 
-    def _generate_response(self, x: npt.NDArray, responseParams: Dict[str, Any]) -> ResponseData:
+    def _generate_response(
+        self, x: npt.NDArray, responseParams: Dict[str, Any]
+    ) -> ResponseData:
         """
         Generates a single response based on the provided parameter values
 
@@ -214,8 +219,12 @@ class ResponseManager:
         """
         response = self.responseClasses(**responseParams)
         responseValues = response(x)
-        return ResponseData(params=responseParams, response=responseValues, responseFunction=self.responseClasses.__name__)
-    
+        return ResponseData(
+            params=responseParams,
+            response=responseValues,
+            responseFunction=self.responseClasses.__name__,
+        )
+
     def generate_responses(self, x: npt.NDArray) -> List[ResponseData]:
         """
         Generates responses for each combination of parameter values
@@ -228,6 +237,7 @@ class ResponseManager:
         """
         paramCombinations = self._get_combinations()
         return [self._generate_response(x, params) for params in paramCombinations]
+
 
 @dataclass
 class ResponseData:
@@ -245,13 +255,24 @@ class ResponseData:
     responseFunction: str
 
 
+# stores a set of responses
+class ResponseSet:
+    def __init__(self, responses: Union[None, List[ResponseData]] = None) -> None:
+        if responses:
+            self.responses = responses
+        else:
+            self.responses = []
+
+    pass
+
+
 if __name__ == "__main__":
     a = VonMisesResponse(1, 0)
-    b = SigmoidResponse(1,1)
+    b = SigmoidResponse(1, 1)
     x = np.linspace(-10, 10, 1000)
     import matplotlib.pyplot as plt
     from parameters import *
-    
+
     # example of plotting response functions directly:
     # plt.plot(x, (a)(x), label="von-mises")
     # plt.plot(x, (b)(x), label="sigmoid")
@@ -260,12 +281,14 @@ if __name__ == "__main__":
     # plt.plot(x, (a*b)(x), label="von-mises * sigmoid")
     # plt.legend()
     # plt.show()
-    
+
     # example of generating large sets of data by varying parameters:
     meanParam: Parameter = UniformRangeParameter(-2, 2, numSamples=4)
     stdParam: Parameter = FixedParameterSet([0.5, 1.0, 1.5])
-    gaussianResponseManager = ResponseManager(GaussianResponse, mean=meanParam, std=stdParam) 
-    gaussianResponses = gaussianResponseManager.generate_responses(x)   
+    gaussianResponseManager = ResponseManager(
+        GaussianResponse, mean=meanParam, std=stdParam
+    )
+    gaussianResponses = gaussianResponseManager.generate_responses(x)
     for response in gaussianResponses:
         plt.plot(x, response.response)
     plt.show()
