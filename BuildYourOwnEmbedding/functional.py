@@ -146,7 +146,45 @@ def plot_rdm(
 ##!         RDM-Related Functions:
 ##! =====================================
 def mds(dissimilarityMatrix: npt.NDArray, nComponents: int = 3) -> npt.NDArray:
-    # implements classical MDS
+    """Perform classical Multidimensional Scaling (MDS) on a dissimilarity matrix.
+    
+    This function implements classical MDS, a technique for visualisingt the level
+    of similarity of dissimilarity between sets of data. Given a square dissimilarity
+    matrix, the function computes a low-dimensional embedding of the data by finding
+    the eigenvectors and eigenvalues of the matrix, resulting in a set of coordinates
+    that best preserve the pairwise distances in the original matrix.
+    
+    This function implements an algorithm that follows these steps:
+    1. Constructs a centreing matrix `J` and computes the double-centred matrix `G`.
+    2. Calculates the eigenvalues and eigenvectors of `G`.
+    3. Sorts the eignevectors based on their corresponding eigenvalues in descending order.
+    4. Selects the top `nComponents` eigenvectors corresponding to the largest eigenvalues.
+    5. Computes the coordinates of the points in the reduced dimensionality space.
+
+    Args:
+        dissimilarityMatrix (npt.NDArray): A square matrix of shape `(n, n)`
+            representing the dissimilarities between `n` samples. Each element
+            at position `(i, j)` represents the dissimilarity between the `i-th`
+            and `j-th` samples.
+        nComponents (int, optional): The number of dimensions for the output
+            embedding. Defaults to 3.
+
+    Returns:
+        npt.NDArray: An array of shape `(n, nComponents)` containing the coordinates
+            of the points in the reduced dimensionality space, where `n` is the
+            number of samples and `nComponents` is the number of dimensions specified.
+    
+    Example:
+        >>> dissimilarity_matrix = np.array([[0.0, 0.5, 0.2],
+                                             [0.5, 0.0, 0.8],
+                                             [0.2, 0.8, 0.0]])
+        >>> embedding = mds(dissimilarity_matrix, nComponents=2)
+        >>> print(embedding)
+    
+    Raises:
+        ValueError: If `dissimilarityMatrix` is not a square matrix.
+    
+    """
     # used notes from: https://www.sjsu.edu/faculty/guangliang.chen/Math253S20/lec9mds.pdf
     numSamples: int = dissimilarityMatrix.shape[0]
 
