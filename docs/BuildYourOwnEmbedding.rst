@@ -1,8 +1,8 @@
-BuildYourOwnEmbedding package
+BuildYourOwnEmbedding
 =============================
 
-Submodules
-----------
+.. Submodules
+.. ----------
 
 Functional module
 ---------------------------------------
