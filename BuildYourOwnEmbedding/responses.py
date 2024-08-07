@@ -9,9 +9,10 @@ import itertools
 import mplcursors
 from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from .parameters import Parameter
-from .functional import inverse_correlation, plot_rdm
+from .functional import inverse_correlation, plot_rdm, mds
 
 ##! =====================================
 ##!             Responses:
@@ -251,12 +252,12 @@ class ResponseData:
     Data class for storing a single response output and the parameters that created it.
 
     Attributes:
-        params (Dict[str, np.ndarray]): The parameters used for generating the response.
+        params (Dict[str, np.number]): The parameters used for generating the response.
         response (np.ndarray): The response values.
         responseFunction (str): The name of the Response Function that generated this Response
     """
 
-    params: Dict[str, npt.NDArray]
+    params: Dict[str, npt.number]
     response: npt.NDArray
     responseFunction: str
     x: npt.NDArray
@@ -325,8 +326,7 @@ class ResponseSet:
                     )
                 rgtm[i, j] = rgtm[j, i] = transformedDissimilarity
         return rgtm
-    
-    
+
     def plot_rgtm(
         self,
         lowerBound: npt.number = 0,
@@ -334,42 +334,60 @@ class ResponseSet:
         dissimilarityMetric: Callable[
             [npt.ArrayLike, npt.ArrayLike], npt.number
         ] = inverse_correlation,
-        interactive: bool=True,
+        interactive: bool = True,
         labels: Union[List[str], None] = None,
         cmap: str = "viridis",
         title: str = "Representational Geo-Topological Matrix",
         figsize: Tuple[int] = (7, 7),
         dissimilarityLabel: str = "Dissimilarity",
     ) -> None:
-        
-        rgtm: npt.NDArray = self.compute_rgtm(lowerBound, upperBound, dissimilarityMetric)
-        
+
+        rgtm: npt.NDArray = self.compute_rgtm(
+            lowerBound, upperBound, dissimilarityMetric
+        )
+
         # create the plot:
         fig, ax = plt.subplots(figsize=figsize)
-        
+
         # display initial RGTM:
-        heatmap = ax.imshow(rgtm, cmap=cmap, vmin=0, vmax=1)  #?
+        heatmap = ax.imshow(rgtm, cmap=cmap, vmin=0, vmax=1)  # ?
         plt.colorbar(heatmap, ax=ax, label=dissimilarityLabel)
         ax.set_title(title)
-        
+
         # todo: show labels if not none:
         # if labels:
         #     ax.set_xticks(labels)
         #     ax.set_yticks(labels)
-        
+
         # if interactive, add interactivity behaviour:
         if interactive:
             # reposition plot to account for sliders:
             plt.subplots_adjust(left=0.25, bottom=0.25)
-            
+
             # add axes for the sliders:
-            lowerBoundSliderAx = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor='lightgoldenrodyellow')
-            upperBoundSliderAx = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor='lightgoldenrodyellow')
-        
+            lowerBoundSliderAx = plt.axes(
+                [0.25, 0.1, 0.65, 0.03], facecolor="lightgoldenrodyellow"
+            )
+            upperBoundSliderAx = plt.axes(
+                [0.25, 0.15, 0.65, 0.03], facecolor="lightgoldenrodyellow"
+            )
+
             # add the sliders:
-            lowerBoundSlider = Slider(ax=lowerBoundSliderAx, label="Lower Bound (l)", valmin=0, valmax=1, valinit=lowerBound)
-            upperBoundSlider = Slider(ax=upperBoundSliderAx, label="Upper Bound (u)", valmin=0, valmax=1, valinit=upperBound)
-            
+            lowerBoundSlider = Slider(
+                ax=lowerBoundSliderAx,
+                label="Lower Bound (l)",
+                valmin=0,
+                valmax=1,
+                valinit=lowerBound,
+            )
+            upperBoundSlider = Slider(
+                ax=upperBoundSliderAx,
+                label="Upper Bound (u)",
+                valmin=0,
+                valmax=1,
+                valinit=upperBound,
+            )
+
             # define update function for slider on change event:
             def onChange(*args, **kwargs):
                 # re-compute the RGTM:
@@ -377,24 +395,29 @@ class ResponseSet:
                 newUpperBound = upperBoundSlider.val
                 if newLowerBound > newUpperBound:
                     # display error message:
-                    ax.set_title("Error: Upper bound must be greater than or equal to the lower bound", color="red")
+                    ax.set_title(
+                        "Error: Upper bound must be greater than or equal to the lower bound",
+                        color="red",
+                    )
                     return  # don't plot if bounds are invalid
-                
+
                 # compute new RGTM:
-                newRgtm = self.compute_rgtm(newLowerBound, newUpperBound, dissimilarityMetric)
-                
+                newRgtm = self.compute_rgtm(
+                    newLowerBound, newUpperBound, dissimilarityMetric
+                )
+
                 # update plot:
                 heatmap.set_data(newRgtm)
                 ax.set_title(title, color="black")
                 fig.canvas.draw_idle()
-            
+
             # add on change function to both sliders
             lowerBoundSlider.on_changed(onChange)
             upperBoundSlider.on_changed(onChange)
-        
+
         # show the plot:
         plt.show()
-    
+
     def plot_rdm(
         self,
         dissimilarityMetric: Callable[
@@ -409,7 +432,6 @@ class ResponseSet:
         rdm = self.compute_rdm(dissimilarityMetric)
         plot_rdm(rdm, labels, cmap, title, figsize, dissimilarityLabel)
         pass
-            
 
     def plot_responses(
         self,
@@ -452,6 +474,67 @@ class ResponseSet:
 
         plt.show()
         pass
+
+    def plot_3D_mds(
+        self,
+        dissimilarityMetric: Callable[
+            [npt.ArrayLike, npt.ArrayLike], npt.number
+        ] = inverse_correlation,
+        xlabel: str = "MDS Dimension 1",
+        ylabel: str = "MDS Dimension 2",
+        zlabel: str = "MDS Dimension 3",
+        cmap: str = "viridis",
+        cbarLabel: Union[str, None] = None,
+        title: str = None,
+        figsize: Tuple[int] = (7, 7),
+        responseToColour: Union[Callable[[ResponseData], npt.number], str, None] = None,
+    ) -> None:
+
+        # compute dissimilarity
+        rdm = self.compute_rdm(dissimilarityMetric)
+
+        # compute 3D MDS:
+        mdsCoords = mds(rdm, nComponents=3)
+
+        # display:
+        fig = plt.figure(figsize=figsize)
+        ax: Axes3D = fig.add_subplot(projection="3d")
+
+        # get colours / values based on colorFunction (if it exists)
+        if responseToColour:
+            if type(responseToColour) == str:
+                colours = [response.params[responseToColour] for response in self.responses]
+            elif callable(responseToColour):
+                colours = [responseToColour(response) for response in self.responses]
+        else:
+            # use first parameter value as default if no colour value is provided
+            colours = [
+                next(iter(response.params.values())) for response in self.responses
+            ]
+
+        # create the scatter plot:
+        scat = ax.scatter(
+            mdsCoords[:, 0],
+            mdsCoords[:, 1],
+            mdsCoords[:, 2],
+            c=colours,
+            cmap=cmap,
+            marker="o",
+            s=100,
+        )
+
+        # set labels and title:
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_zlabel(zlabel)
+        ax.set_title(title)
+
+        # add colour bar:
+        cb = fig.colorbar(scat, ax=ax, shrink=0.5, aspect=10)  # ?
+        if cbarLabel:
+            cb.set_label(cbarLabel)
+
+        plt.show()
 
 
 if __name__ == "__main__":
