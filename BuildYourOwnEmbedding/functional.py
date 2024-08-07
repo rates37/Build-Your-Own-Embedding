@@ -55,3 +55,32 @@ def plot_rdm(
         plt.xticks(range(len(labels)), labels, rotation=75, ha="left")
         plt.yticks(range(len(labels)), labels)
     plt.show()
+
+
+##! =====================================
+##!         RDM-Related Functions:
+##! =====================================
+def mds(dissimilarityMatrix: npt.NDArray, nComponents: int = 3) -> npt.NDArray:
+    # implements classical MDS
+    # used notes from: https://www.sjsu.edu/faculty/guangliang.chen/Math253S20/lec9mds.pdf
+    numSamples: int = dissimilarityMatrix.shape[0]
+
+    # compute G matrix:
+    J = np.eye(numSamples) - np.ones((numSamples, numSamples)) / numSamples
+    G = -0.5 * J @ (dissimilarityMatrix**2) @ J
+
+    # find eigenvalues and eigenvectors:
+    eigenValues, eigenVectors = np.linalg.eigh(G)
+
+    # sort eigenvectors based on their eigenvalues in descending order:
+    indices = np.argsort(eigenValues)  # ascending order
+    indices = indices[::-1]  # descending order
+    eigenValues = eigenValues[indices]
+    eigenVectors = eigenVectors[:, indices]
+
+    # get top nComponents:
+    topNEigenValues = eigenValues[:nComponents]
+    topNEigenVectors = eigenVectors[:, :nComponents]
+
+    # compute coordinates of points:
+    return topNEigenVectors * np.sqrt(topNEigenValues)
