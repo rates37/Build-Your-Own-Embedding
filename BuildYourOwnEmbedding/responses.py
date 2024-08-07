@@ -11,7 +11,7 @@ from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
 
 from .parameters import Parameter
-from .functional import inverse_correlation
+from .functional import inverse_correlation, plot_rdm
 
 ##! =====================================
 ##!             Responses:
@@ -394,6 +394,21 @@ class ResponseSet:
         
         # show the plot:
         plt.show()
+    
+    def plot_rdm(
+        self,
+        dissimilarityMetric: Callable[
+            [npt.ArrayLike, npt.ArrayLike], npt.number
+        ] = inverse_correlation,
+        labels: Union[List[str], None] = None,
+        cmap: str = "viridis",
+        title: str = None,
+        figsize: Tuple[int] = (7, 7),
+        dissimilarityLabel: str = "Dissimilarity",
+    ) -> None:
+        rdm = self.compute_rdm(dissimilarityMetric)
+        plot_rdm(rdm, labels, cmap, title, figsize, dissimilarityLabel)
+        pass
             
 
     def plot_responses(
