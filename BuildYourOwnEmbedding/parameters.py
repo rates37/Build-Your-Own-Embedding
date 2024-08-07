@@ -9,7 +9,7 @@ class Parameter(ABC):
     """
     Abstract base class for defining a parameter with a specific strategy to vary its value
     """
-    
+
     def __init__(self, numSamples: int) -> None:
         """
         Initialises the Parameter with the number of samples to generate
@@ -33,19 +33,20 @@ class Parameter(ABC):
     def __len__(self) -> int:
         return self.numSamples
 
+
 class UniformRangeParameter(Parameter):
     """
     Parameter class for generating a uniform set of values within a range.
     """
 
-    def __init__(self, minValue: np.number, maxValue: np.number, numSamples: int) -> None:
+    def __init__(
+        self, minValue: np.number, maxValue: np.number, numSamples: int
+    ) -> None:
         super().__init__(numSamples)
         self.minValue: np.number = minValue
         self.maxValue: np.number = maxValue
 
-    def get_values(
-        self, dtype: npt.DTypeLike = np.float64
-    ) -> npt.NDArray:
+    def get_values(self, dtype: npt.DTypeLike = np.float64) -> npt.NDArray:
         """
         Generates a linearly spaced array of values for the parameter
 
@@ -65,14 +66,14 @@ class RandomRangeParameter(Parameter):
     Parameter class for generating a random set of values within a range.
     """
 
-    def __init__(self, minValue: np.number, maxValue: np.number, numSamples: int) -> None:
+    def __init__(
+        self, minValue: np.number, maxValue: np.number, numSamples: int
+    ) -> None:
         super().__init__(numSamples)
         self.minValue: np.number = minValue
         self.maxValue: np.number = maxValue
 
-    def get_values(
-        self, dtype: npt.DTypeLike = np.float64
-    ) -> npt.NDArray:
+    def get_values(self, dtype: npt.DTypeLike = np.float64) -> npt.NDArray:
         """
         Generates a random array of values for the parameter
 
@@ -82,7 +83,9 @@ class RandomRangeParameter(Parameter):
         Returns:
             npt.NDArray: A numpy array of random values
         """
-        return np.random.uniform(self.minValue, self.maxValue, self.numSamples).astype(dtype)
+        return np.random.uniform(self.minValue, self.maxValue, self.numSamples).astype(
+            dtype
+        )
 
 
 class FixedParameterSet(Parameter):
@@ -113,14 +116,14 @@ class LogRangeParameter(Parameter):
     Parameter class for generating a logarithmically scaling set of values within a range.
     """
 
-    def __init__(self, minValue: np.number, maxValue: np.number, numSamples: int) -> None:
+    def __init__(
+        self, minValue: np.number, maxValue: np.number, numSamples: int
+    ) -> None:
         super().__init__(numSamples)
         self.minValue: np.number = minValue
         self.maxValue: np.number = maxValue
 
-    def get_values(
-        self, dtype: npt.DTypeLike = np.float64
-    ) -> npt.NDArray:
+    def get_values(self, dtype: npt.DTypeLike = np.float64) -> npt.NDArray:
         """
         Generates a logarithmically spaced array of values for the parameter
 
@@ -135,18 +138,16 @@ class LogRangeParameter(Parameter):
         )
 
 
-
 class ConstantParameter(Parameter):
     """
     Parameter class that always outputs a constant value.
     """
+
     def __init__(self, value: np.number) -> None:
         super().__init__(1)  # only ever 1 value
         self.value: np.number = value
 
-    def get_values(
-        self, dtype: npt.DTypeLike = np.float64
-    ) -> npt.NDArray:
+    def get_values(self, dtype: npt.DTypeLike = np.float64) -> npt.NDArray:
         """
         Generates an array of the specified value for the parameter
 
@@ -156,18 +157,6 @@ class ConstantParameter(Parameter):
         Returns:
             npt.NDArray: An array of size numSamples where all elements are the same value.
         """
-        return np.full(
-            dtype=dtype, shape=(1,1), fill_value=self.value
-        )
-    
-    
-    pass
+        return np.full(dtype=dtype, shape=(1, 1), fill_value=self.value)
 
-if __name__ == "__main__":
-    # testing
-    u = LogRangeParameter(1, 1000, 4)
-    print(u.get_values())
-    u = FixedParameterSet([12.12, 112, 1, 1, 432, 4346, 62])
-    print(u.get_values())
-    u = RandomRangeParameter(1, 1000, 5)
-    print(u.get_values())
+    pass
