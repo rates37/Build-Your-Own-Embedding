@@ -349,7 +349,7 @@ class ResponseSet:
         
         # display initial RGTM:
         heatmap = ax.imshow(rgtm, cmap=cmap, vmin=0, vmax=1)  #?
-        plt.colorbar(heatmap, ax=ax)
+        plt.colorbar(heatmap, ax=ax, label=dissimilarityLabel)
         ax.set_title(title)
         
         # todo: show labels if not none:
