@@ -7,6 +7,7 @@ from typing import Union, Dict, Tuple, Any, Type, Callable, List
 import inspect
 import itertools
 import mplcursors
+from matplotlib.widgets import Slider
 import matplotlib.pyplot as plt
 
 from .parameters import Parameter
@@ -277,20 +278,123 @@ class ResponseSet:
 
     def compute_rdm(
         self,
-        dissimilarity_metric: Callable[
+        dissimilarityMetric: Callable[
             [npt.ArrayLike, npt.ArrayLike], npt.number
         ] = inverse_correlation,
     ) -> npt.ArrayLike:
         n: int = len(self.responses)
-        rdm: np.ndarray = np.zeros((n, n))
+        rdm: npt.NDArray = np.zeros((n, n))
 
         for i in range(n):
             for j in range(i + 1, n):
-                rdm[i, j] = rdm[j, i] = dissimilarity_metric(
+                rdm[i, j] = rdm[j, i] = dissimilarityMetric(
                     self.responses[i].response, self.responses[j].response
                 )
 
         return rdm
+
+    def compute_rgtm(
+        self,
+        lowerBound: npt.number,
+        upperBound: npt.number,
+        dissimilarityMetric: Callable[
+            [npt.ArrayLike, npt.ArrayLike], npt.number
+        ] = inverse_correlation,
+    ) -> npt.ArrayLike:
+
+        assert lowerBound <= upperBound
+
+        n: int = len(self.responses)
+        rgtm: npt.NDArray = np.zeros((n, n))
+
+        for i in range(n):
+            for j in range(i + 1, n):
+                # compute dissimilarity:
+                dissimilarity = dissimilarityMetric(
+                    self.responses[i].response, self.responses[j].response
+                )
+
+                # compute geo-topological transform:
+                if dissimilarity <= lowerBound:
+                    transformedDissimilarity = 0
+                elif dissimilarity >= upperBound:
+                    transformedDissimilarity = 1
+                else:
+                    transformedDissimilarity = (dissimilarity - lowerBound) / (
+                        upperBound - lowerBound
+                    )
+                rgtm[i, j] = rgtm[j, i] = transformedDissimilarity
+        return rgtm
+    
+    
+    def plot_rgtm(
+        self,
+        lowerBound: npt.number = 0,
+        upperBound: npt.number = 1,
+        dissimilarityMetric: Callable[
+            [npt.ArrayLike, npt.ArrayLike], npt.number
+        ] = inverse_correlation,
+        interactive: bool=True,
+        labels: Union[List[str], None] = None,
+        cmap: str = "viridis",
+        title: str = "Representational Geo-Topological Matrix",
+        figsize: Tuple[int] = (7, 7),
+        dissimilarityLabel: str = "Dissimilarity",
+    ) -> None:
+        
+        rgtm: npt.NDArray = self.compute_rgtm(lowerBound, upperBound, dissimilarityMetric)
+        
+        # create the plot:
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        # display initial RGTM:
+        heatmap = ax.imshow(rgtm, cmap=cmap, vmin=0, vmax=1)  #?
+        plt.colorbar(heatmap, ax=ax)
+        ax.set_title(title)
+        
+        # todo: show labels if not none:
+        # if labels:
+        #     ax.set_xticks(labels)
+        #     ax.set_yticks(labels)
+        
+        # if interactive, add interactivity behaviour:
+        if interactive:
+            # reposition plot to account for sliders:
+            plt.subplots_adjust(left=0.25, bottom=0.25)
+            
+            # add axes for the sliders:
+            lowerBoundSliderAx = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor='lightgoldenrodyellow')
+            upperBoundSliderAx = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor='lightgoldenrodyellow')
+        
+            # add the sliders:
+            lowerBoundSlider = Slider(ax=lowerBoundSliderAx, label="Lower Bound (l)", valmin=0, valmax=1, valinit=lowerBound)
+            upperBoundSlider = Slider(ax=upperBoundSliderAx, label="Upper Bound (u)", valmin=0, valmax=1, valinit=upperBound)
+            
+            # define update function for slider on change event:
+            def onChange(*args, **kwargs):
+                # re-compute the RGTM:
+                newLowerBound = lowerBoundSlider.val
+                newUpperBound = upperBoundSlider.val
+                if newLowerBound > newUpperBound:
+                    # display error message:
+                    ax.set_title("Error: Upper bound must be greater than or equal to the lower bound", color="red")
+                    return  # don't plot if bounds are invalid
+                
+                # compute new RGTM:
+                newRgtm = self.compute_rgtm(newLowerBound, newUpperBound, dissimilarityMetric)
+                
+                # update plot:
+                heatmap.set_data(newRgtm)
+                ax.set_title(title, color="black")
+                fig.canvas.draw_idle()
+            
+            # add on change function to both sliders
+            lowerBoundSlider.on_changed(onChange)
+            upperBoundSlider.on_changed(onChange)
+        
+        # show the plot:
+        plt.show()
+            
 
     def plot_responses(
         self,
