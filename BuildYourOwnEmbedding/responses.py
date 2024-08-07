@@ -22,73 +22,168 @@ from .functional import inverse_correlation, plot_rdm, mds
 class ResponseFunction(ABC):
     """
     Base class for defining neural responses.
+
+    The `ResponseFunction` class serves as an abstract base class for creating neural
+    response functions that can be evaluated based on input data. This class provides
+    a standardised interface for defining neural response curves, allowing users to
+    implement custom responses by extending this class and implementing the `evaluate`
+    method. It also supports mathematical operations to combine responses, creating
+    composite response functions.
+
+    Attributes:
+        params (Dict): A dictionary containing response-specific parameters used
+                       to define the behavior of the response function.
+
+    Methods:
+        evaluate(x: npt.NDArray) -> npt.NDArray:
+            Abstract method to evaluate the neural response for a given input.
+
+        __call__(x: npt.NDArray) -> npt.NDArray:
+            Calls the `evaluate` method to compute the response for the given input.
+
+        __add__(other: ResponseFunction) -> CompositeResponse:
+            Combines this response with another response using addition.
+
+        __sub__(other: ResponseFunction) -> CompositeResponse:
+            Combines this response with another response using subtraction.
+
+        __mul__(other: ResponseFunction) -> CompositeResponse:
+            Combines this response with another response using multiplication.
+
+        __str__() -> str:
+            Returns a string representation of the response function.
     """
 
     def __init__(self, **kwargs: Any) -> None:
         """
-        Initialises response class with response-specific parameters.
+        Initialises the response function with specific parameters.
+
+        This constructor accepts named arguments for the parameters that define
+        the behavior of the neural response function. These parameters are stored
+        in a dictionary for later use by the response function.
 
         Args:
-            **kwargs (Any): Named arguments for parameter values.
+            **kwargs (Any):
+                Named arguments representing the parameters of the response function.
+
+        Notes:
+            Subclasses should provide specific parameter requirements, which will be
+            documented in their respective class definitions.
         """
         self.params: Dict = kwargs  # Store all parameters for general use
 
     @abstractmethod
     def evaluate(self, x: npt.NDArray) -> npt.NDArray:
         """
-        Evaluate the response of the neuron for a given input
+        Evaluate the response of the neuron for a given input.
+
+        This abstract method must be implemented by subclasses to define how the
+        response function computes output values based on input data.
 
         Args:
-            x (npt.NDArray): The input data
+            x (npt.NDArray):
+                The input data for which the response is evaluated. This should be
+                a Numpy array representing the stimulus or feature input to the neuron.
 
         Returns:
-            npt.NDArray: The response values
+            npt.NDArray:
+                A Numpy array representing the evaluated response values corresponding
+                to the input data.
+
+        Raises:
+            NotImplementedError:
+                This method must be overridden by subclasses, otherwise, calling it
+                will raise this error.
         """
         pass
 
     def __call__(self, x: npt.NDArray) -> npt.NDArray:
+        """
+        Compute the response by calling the evaluate method.
+
+        This method allows the object to be used as a callable function, directly
+        invoking the `evaluate` method when the instance is called with input data.
+
+        Args:
+            x (npt.NDArray):
+                The input data for which the response is evaluated.
+
+        Returns:
+            npt.NDArray:
+                The response values computed by the `evaluate` method.
+        """
         return self.evaluate(x)
 
     def __add__(self, other: ResponseFunction) -> CompositeResponse:
         """
-        Add another response to this response to create a composite response.
+        Add another response function to this response function.
+
+        This method allows the creation of a composite response by adding the outputs
+        of two different response functions. The resulting composite response is
+        represented by a new instance of the `CompositeResponse` class.
 
         Args:
-            other (ResponseFunction): The other response to add.
+            other (ResponseFunction):
+                The other response function to be added to this response.
 
         Returns:
-            CompositeResponse: A new composite response representing the addition of this response and the other response.
+            CompositeResponse:
+                A new `CompositeResponse` instance representing the combined response
+                of this response and the other response.
         """
         return CompositeResponse(self, other, np.add)
 
     def __sub__(self, other: ResponseFunction) -> CompositeResponse:
         """
-        Subtract another response from this response to create a composite response.
+        Subtract another response function from this response function.
+
+        This method allows the creation of a composite response by subtracting the
+        outputs of another response function from this response. The resulting composite
+        response is represented by a new instance of the `CompositeResponse` class.
 
         Args:
-            other (ResponseFunction): The other response to subtract.
+            other (ResponseFunction):
+                The other response function to be subtracted from this response.
 
         Returns:
-            CompositeResponse: A new composite response representing the subtraction of the other response from this response.
+            CompositeResponse:
+                A new `CompositeResponse` instance representing the difference between
+                this response and the other response.
         """
         return CompositeResponse(self, other, np.subtract)
 
     def __mul__(self, other: ResponseFunction) -> CompositeResponse:
         """
-        Multiply by another response to create a composite response.
+        Multiply this response function by another response function.
+
+        This method allows the creation of a composite response by multiplying the
+        outputs of two different response functions. The resulting composite response
+        is represented by a new instance of the `CompositeResponse` class.
 
         Args:
-            other (ResponseFunction): The other response to multiply with.
+            other (ResponseFunction):
+                The other response function to multiply with this response.
 
         Returns:
-            CompositeResponse: A new composite response representing the multiplication of this response and the other response.
+            CompositeResponse:
+                A new `CompositeResponse` instance representing the product of this
+                response and the other response.
         """
         return CompositeResponse(self, other, np.multiply)
 
     def __str__(self) -> str:
-        return f"{type(self).__name__}, {self.params}"
+        """
+        Return a string representation of the response function.
 
-    # todo: divide operation as well
+        This method provides a human-readable representation of the response function,
+        including its class name and the parameters used to define its behavior.
+
+        Returns:
+            str:
+                A string representation of the response function, displaying the class
+                name and its parameter values.
+        """
+        return f"{type(self).__name__}, {self.params}"
 
 
 class CompositeResponse(ResponseFunction):
@@ -503,7 +598,9 @@ class ResponseSet:
         # get colours / values based on colorFunction (if it exists)
         if responseToColour:
             if type(responseToColour) == str:
-                colours = [response.params[responseToColour] for response in self.responses]
+                colours = [
+                    response.params[responseToColour] for response in self.responses
+                ]
             elif callable(responseToColour):
                 colours = [responseToColour(response) for response in self.responses]
         else:
@@ -535,33 +632,3 @@ class ResponseSet:
             cb.set_label(cbarLabel)
 
         plt.show()
-
-
-if __name__ == "__main__":
-    a = VonMisesResponse(1, 0)
-    b = SigmoidResponse(1, 1)
-    x = np.linspace(-10, 10, 1000)
-    import matplotlib.pyplot as plt
-    from parameters import *
-
-    # example of plotting response functions directly:
-    # plt.plot(x, (a)(x), label="von-mises")
-    # plt.plot(x, (b)(x), label="sigmoid")
-    # plt.plot(x, (a+b)(x), label="von-mises + sigmoid")  # composite function support
-    # plt.plot(x, (a-b)(x), label="von-mises - sigmoid")
-    # plt.plot(x, (a*b)(x), label="von-mises * sigmoid")
-    # plt.legend()
-    # plt.show()
-
-    # example of generating large sets of data by varying parameters:
-    meanParam: Parameter = UniformRangeParameter(-2, 2, numSamples=5)
-    stdParam: Parameter = FixedParameterSet([0.5, 1.0, 1.5])
-    gaussianResponseManager = ResponseManager(
-        GaussianResponse, mean=meanParam, std=stdParam
-    )
-    gaussianResponses = gaussianResponseManager.generate_responses(x)
-    for response in gaussianResponses:
-        plt.plot(x, response.response)
-    plt.show()
-    responseSet = ResponseSet(gaussianResponses)
-    responseSet.plot_responses()
