@@ -28,10 +28,10 @@ Responses module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+.. Module contents
+.. ---------------
 
-.. automodule:: BuildYourOwnEmbedding
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. .. automodule:: BuildYourOwnEmbedding
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
