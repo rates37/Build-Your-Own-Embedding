@@ -97,7 +97,7 @@ class ResponseFunction(ABC):
         """
         pass
 
-    def __call__(self, x: npt.NDArray) -> npt.NDArray:
+    def __call__(self, x: npt.NDArray, noiseLevel: npt.number = 0) -> npt.NDArray:
         """
         Compute the response by calling the evaluate method.
 
@@ -107,12 +107,17 @@ class ResponseFunction(ABC):
         Args:
             x (npt.NDArray):
                 The input data for which the response is evaluated.
+            noiseLevel (npt.number, optional):
+                The standard deviation of Gaussian noise to be added to the response. Defaults to 0 (no noise).
 
         Returns:
             npt.NDArray:
                 The response values computed by the `evaluate` method.
         """
-        return self.evaluate(x)
+        response = self.evaluate(x)
+        if noiseLevel > 0:
+            response += np.random.normal(0, noiseLevel, response.shape)
+        return response
 
     def __add__(self, other: ResponseFunction) -> CompositeResponse:
         """
@@ -306,7 +311,7 @@ class ResponseManager:
         return [dict(zip(paramNames, paramCombo)) for paramCombo in paramCombinations]
 
     def _generate_response(
-        self, x: npt.NDArray, responseParams: Dict[str, Any]
+        self, x: npt.NDArray, responseParams: Dict[str, Any], noiseLevel: npt.number = 0
     ) -> ResponseData:
         """
         Generates a single response based on the provided parameter values
@@ -314,12 +319,14 @@ class ResponseManager:
         Args:
             x (npt.NDArray): The input data for which the response is generated
             responseParams (Dict[str, Any]): Parameter values for the response
+            noiseLevel (npt.number, optional):
+                The standard deviation of Gaussian noise to be added to the response. Defaults to 0 (no noise).
 
         Returns:
             ResponseData: A ResponseData object containing the response values and the corresponding parameters.
         """
         response = self.responseClasses(**responseParams)
-        responseValues = response(x)
+        responseValues = response(x, noiseLevel)
         return ResponseData(
             params=responseParams,
             response=responseValues,
@@ -327,18 +334,28 @@ class ResponseManager:
             x=x,
         )
 
-    def generate_responses(self, x: npt.NDArray) -> List[ResponseData]:
+    def generate_responses(
+        self, x: npt.NDArray, noiseLevel: npt.number = 0, numSamples: int = 1
+    ) -> List[ResponseData]:
         """
         Generates responses for each combination of parameter values
 
         Args:
             x (npt.NDArray): The input data for which the response is generated
+            noiseLevel (npt.number, optional):
+                The standard deviation of Gaussian noise to be added to the response. Defaults to 0 (no noise).
+            numSamples (int, optional):
+                The number of times to sample each combination of parameters. Defaults to 1.
 
         Returns:
             List[ResponseData]: List of ResponseData objects containing each response and the corresponding parameters.
         """
         paramCombinations = self._get_combinations()
-        return [self._generate_response(x, params) for params in paramCombinations]
+        responses = []
+        for params in paramCombinations:
+            for _ in range(numSamples):
+                responses.append(self._generate_response(x, params, noiseLevel))
+        return responses
 
 
 @dataclass
