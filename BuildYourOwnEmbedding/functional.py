@@ -13,7 +13,7 @@ def inverse_correlation(
     x1: npt.NDArray, x2: npt.NDArray, dtype: npt.DTypeLike = np.float64
 ) -> np.number:
     """Computes the inverse correlation between two numpy arrays.
-    
+
     This function calculates the inverse of the Pearson correlation coefficient
     between two input arrays, `x1` and `x2`, and returns the result cast to the
     specified `dtype`.
@@ -36,7 +36,7 @@ def manhattan_distance(
     x1: npt.NDArray, x2: npt.NDArray, dtype: npt.DTypeLike = np.float64
 ) -> np.number:
     """Computes the Manhattan distance between two numpy arrays.
-    
+
     This function calculates the Manhattan distance (L1 norm), between two input
     arrays, `x1` and `x2`, and returns the result cast to the specified `dtype`.
 
@@ -58,7 +58,7 @@ def euclidian_distance(
     x1: npt.NDArray, x2: npt.NDArray, dtype: npt.DTypeLike = np.float64
 ) -> np.number:
     """Computes the Euclidian distance between two numpy arrays.
-    
+
     This function calculates the Euclidian distance (L2 norm), between two input
     arrays, `x1` and `x2`, and returns the result cast to the specified `dtype`.
 
@@ -80,7 +80,7 @@ def cosine_similarity(
     x1: npt.NDArray, x2: npt.NDArray, dtype: npt.DTypeLike = np.float64
 ) -> np.number:
     """Computes the cosine similarity between two numpy arrays.
-    
+
     This function calculates the cosine similarity, between two input
     arrays, `x1` and `x2`, and returns the result cast to the specified `dtype`.
 
@@ -110,7 +110,7 @@ def plot_rdm(
     dissimilarityLabel: str = "Dissimilarity",
 ) -> None:
     """Plots a Representational Dissimilarity Matrix (RDM).
-    
+
     This function visualises a given RDM given as a square matrix that represents the
     pairwise dissimilarities between different data points or conditions. The
     function provides customisation options for colormap, title, axis labels, and
@@ -150,19 +150,19 @@ def plot_rdm(
 
 
 ##! =====================================
-##!         RDM-Related Functions:
+##!             Metrics:
 ##! =====================================
 def mds(dissimilarityMatrix: npt.NDArray, nComponents: int = 3) -> npt.NDArray:
     """Perform classical Multidimensional Scaling (MDS) on a dissimilarity matrix.
-    
+
     This function implements classical MDS, a technique for visualising the level
     of similarity of dissimilarity between sets of data. Given a square dissimilarity
     matrix, the function computes a low-dimensional embedding of the data by finding
     the eigenvectors and eigenvalues of the matrix, resulting in a set of coordinates
     that best preserve the pairwise distances in the original matrix.
-    
+
     This function implements an algorithm that follows these steps:
-    
+
     1. Constructs a centreing matrix `J` and computes the double-centred matrix `G`.
     2. Calculates the eigenvalues and eigenvectors of `G`.
     3. Sorts the eignevectors based on their corresponding eigenvalues in descending order.
@@ -216,3 +216,15 @@ def mds(dissimilarityMatrix: npt.NDArray, nComponents: int = 3) -> npt.NDArray:
 
     # compute coordinates of points:
     return topNEigenVectors * np.sqrt(topNEigenValues)
+
+
+def pca_variance_explained(dissimilarityMatrix: npt.NDArray) -> npt.NDArray:
+
+    # perform eigendecomposition:
+    eigenvalues, _ = np.linalg.eigh(dissimilarityMatrix)
+    eigenvalues = eigenvalues[::-1]  # sorts in descending order
+
+    # compute variance explained:
+    varianceSum = np.sum(eigenvalues)
+    varianceRatios = eigenvalues / varianceSum
+    return varianceRatios
