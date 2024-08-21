@@ -155,7 +155,7 @@ def plot_rdm(
 def mds(dissimilarityMatrix: npt.NDArray, nComponents: int = 3) -> npt.NDArray:
     """Perform classical Multidimensional Scaling (MDS) on a dissimilarity matrix.
     
-    This function implements classical MDS, a technique for visualisingt the level
+    This function implements classical MDS, a technique for visualising the level
     of similarity of dissimilarity between sets of data. Given a square dissimilarity
     matrix, the function computes a low-dimensional embedding of the data by finding
     the eigenvectors and eigenvalues of the matrix, resulting in a set of coordinates
