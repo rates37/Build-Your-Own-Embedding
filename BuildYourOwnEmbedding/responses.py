@@ -7,7 +7,7 @@ from typing import Union, Dict, Tuple, Any, Type, Callable, List
 import inspect
 import itertools
 import mplcursors
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, Button
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -576,7 +576,57 @@ class ResponseSet:
         grid: bool = False,
         hoverEffects: bool = True,  # if false will not add hover effect to plot
     ) -> None:
+        responseShape = list(self.responses[0].response.shape)
+        
+        # plot 1-d responses:
+        if len(responseShape) == 1:
+            self._plot_responses_1d(figsize, xlabel, ylabel, title, grid, hoverEffects)
+        # plot 2-d responses:
+        elif len(responseShape) == 2:
+            self._plot_responses_2d(figsize, xlabel, ylabel, title, grid, hoverEffects)
+        # otherwise, error:
+        
+        # exit()
+        # # plot the responses:
+        # plt.figure(figsize=figsize)
+        # plottedResponses = []
+        # for i in range(len(self.responses)):
+        #     (plottedResponse,) = plt.plot(
+        #         self.responses[i].x, self.responses[i].response
+        #     )
+        #     plottedResponses.append(plottedResponse)
 
+        # plt.xlabel(xlabel=xlabel)
+        # plt.ylabel(ylabel=ylabel)
+        # plt.title(label=title)
+        # plt.grid(visible=grid)
+
+        # if hoverEffects:
+        #     cursor = mplcursors.cursor(hover=True)
+
+        #     @cursor.connect("add")
+        #     def on_add(selectedResponse) -> None:
+        #         curve = selectedResponse.artist
+        #         idx = plottedResponses.index(curve)
+
+        #         # set annotation to show formatted parameters:
+        #         # todo
+        #         selectedResponse.annotation.set(text=f"{str(self.responses[idx])}")
+        #         selectedResponse.annotation.get_bbox_patch().set(
+        #             fc="white", alpha=0.8
+        #         )  # todo: make these parameters variable
+
+        # plt.show()
+
+    def _plot_responses_1d(
+        self,
+        figsize: Tuple[int] = (7, 7),
+        xlabel: str = "Stimuli",
+        ylabel: str = "Response",
+        title: str = "Responses",
+        grid: bool = False,
+        hoverEffects: bool = True,  # if false will not add hover effect to plot
+        ) -> None:
         # plot the responses:
         plt.figure(figsize=figsize)
         plottedResponses = []
@@ -607,7 +657,57 @@ class ResponseSet:
                 )  # todo: make these parameters variable
 
         plt.show()
-        pass
+        
+    def _plot_responses_2d(
+        self,
+        figsize: Tuple[int] = (7, 7),
+        xlabel: str = "Stimuli 1",
+        zlabel: str = "Stimuli 2",
+        ylabel: str = "Response",
+        title: str = "Responses",
+        grid: bool = False,
+        hoverEffects: bool = True,  # if false will not add hover effect to plot
+        cmap: str = 'viridis',
+    ) -> None:
+        # plot the responses:
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(111, projection='3d')
+        
+        self.currentResponseIndex = 0
+        
+        # function to click through plot:
+        def update_plot(responseIndex: int) -> None:
+            ax.clear()
+            response = self.responses[responseIndex].response
+            x,y = self.responses[responseIndex].x
+            
+            ax.plot_surface(x,y, response, cmap = cmap)
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+            ax.set_zlabel(zlabel)
+            ax.set_title(title)
+            plt.draw()
+        
+        update_plot(self.currentResponseIndex)
+        
+        # function for when next button is clicked:
+        def next_response(e) -> None:
+            self.currentResponseIndex = (self.currentResponseIndex+1)%len(self.responses)
+            update_plot(self.currentResponseIndex)
+        
+        # function for when previous button is clicked:
+        def prev_response(e) -> None:
+            self.currentResponseIndex = (self.currentResponseIndex-1)%len(self.responses)
+            update_plot(self.currentResponseIndex)
+        
+        # add buttons for interactivity:
+        axNext = plt.axes([0.8, 0.05, 0.1, 0.075])
+        btnNext = Button(axNext, 'Next response')
+        btnNext.on_clicked(next_response)
+        axPrev = plt.axes([0.7, 0.05, 0.1, 0.075])
+        btnPrev = Button(axPrev, 'Next response')
+        btnPrev.on_clicked(next_response)
+        plt.show()
 
     def plot_3D_mds(
         self,
