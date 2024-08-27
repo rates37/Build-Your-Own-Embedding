@@ -262,6 +262,28 @@ class VonMisesResponse(ResponseFunction):
         return np.exp(kappa * np.cos(x - theta)) / (2 * np.pi * np.sinh(kappa))
 
 
+class GaussianResponse2D(ResponseFunction):
+    def __init__(
+        self, xMean: npt.number, yMean: npt.number, xStd: npt.number, yStd: npt.number
+    ) -> None:
+        super().__init__(xMean=xMean, yMean=yMean, xStd=xStd, yStd=yStd)
+
+    def evaluate(
+        self, x: npt.NDArray, dtype: npt.DTypeLike = np.float64
+    ) -> npt.NDArray:
+        xVals, yVals = x  # unpack
+        return dtype(
+            np.exp(
+                -(
+                    ((xVals - self.params["xMean"]) ** 2)
+                    / (2 * self.params["xStd"] ** 2)
+                    + ((yVals - self.params["yMean"]) ** 2)
+                    / (2 * self.params["yStd"] ** 2)
+                )
+            )
+        )
+
+
 ##! =====================================
 ##!         Response Manager:
 ##! =====================================
