@@ -83,6 +83,8 @@ def cosine_similarity(
 
     This function calculates the cosine similarity, between two input
     arrays, `x1` and `x2`, and returns the result cast to the specified `dtype`.
+    If the input arrays are not 1D, they are flattened and then the cosine 
+    similarity is computed.
 
     Args:
         x1 (npt.NDArray):
@@ -95,7 +97,9 @@ def cosine_similarity(
     Returns:
         np.number: The cosine similarity between `x1` and `x2`, cast to the specified `dtype`.
     """
-    return dtype(np.dot(x1, x2) / (np.linalg.norm(x1) * np.linalg.norm(x2)))
+    x1Flat = np.hstack(x1)
+    x2Flat = np.hstack(x2)
+    return dtype(np.dot(x1Flat, x2Flat) / (np.linalg.norm(x1Flat) * np.linalg.norm(x2Flat)))
 
 
 ##! =====================================
