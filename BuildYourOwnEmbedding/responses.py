@@ -216,6 +216,16 @@ class CompositeResponse(ResponseFunction):
         self.operation = operation
 
     def evaluate(self, x: npt.NDArray) -> npt.NDArray:
+        """
+        Evaluates the CompositeResponse for a given input stimuli.
+
+        Args:
+            x (npt.NDArray): The input stimuli for which to generate a response.
+
+        Returns:
+            npt.NDArray: The response of the CompositeResponse function to the stimuli `x`.
+
+        """
         return self.operation(self.response1(x), self.response2(x))
 
     def __str__(self) -> str:
@@ -225,12 +235,30 @@ class CompositeResponse(ResponseFunction):
 
 
 class GaussianResponse(ResponseFunction):
+    """GaussianResponse class. Is the response function for a 1-dimensional gaussian
+    response model.
+    """
     def __init__(self, mean: npt.number, std: npt.number) -> None:
+        """Constructor method for the GaussianResponse response function.
+
+        Args:
+            mean (npt.number): The mean value for the desired Gaussian response function.
+            std (npt.number): The standard deviation of the desired Gaussian response function.
+        """        
         super().__init__(mean=mean, std=std)
 
     def evaluate(
         self, x: npt.NDArray, dtype: npt.DTypeLike = np.float64
     ) -> npt.NDArray:
+        """Evaluates the GaussianResponse response function for a given stimuli.
+
+        Args:
+            x (npt.NDArray): The stimuli for which to generate a response to.
+            dtype (npt.DTypeLike, optional): The desired data type of the output. Defaults to np.float64.
+
+        Returns:
+            npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
+        """        
         mean = self.params["mean"]
         std = self.params["std"]
         return dtype(
@@ -239,24 +267,60 @@ class GaussianResponse(ResponseFunction):
 
 
 class SigmoidResponse(ResponseFunction):
+    """SigmoidResponse class. Is the response function for a 1-dimensional sigmoid
+    response model.
+    """
     def __init__(self, alpha: npt.number, beta: npt.number) -> None:
+        """Constructor for SigmoidResponse response function.
+
+        Args:
+            alpha (npt.number): The alpha value (steepness of slope) of the desired sigmoid response function.
+            beta (npt.number): The beta value (pivot point) of the desired sigmoid response function.
+        """        
         super().__init__(alpha=alpha, beta=beta)
 
     def evaluate(
         self, x: npt.NDArray, dtype: npt.DTypeLike = np.float64
     ) -> npt.NDArray:
+        """Evaluates the SigmoidResponse response function for a given stimuli.
+
+        Args:
+            x (npt.NDArray): The stimuli for which to generate a response to.
+            dtype (npt.DTypeLike, optional): The desired data type of the output. Defaults to np.float64.
+
+        Returns:
+            npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
+        """        
         alpha = self.params["alpha"]
         beta = self.params["beta"]
         return dtype(1 / (1 + np.exp(-alpha * (x - beta))))
 
 
 class VonMisesResponse(ResponseFunction):
+    """VonMisesResponse class. Is the response function for a 1-dimensional Von-mises
+    response model.
+    """
     def __init__(self, kappa: npt.number, theta: npt.number) -> None:
+        """Constructor for the VonMisesResponse response function.
+
+        Args:
+            kappa (npt.number): The kappa value for the desired von-mises response.
+            theta (npt.number): The theta value for the desired von-mises response.
+        """        
         super().__init__(kappa=kappa, theta=theta)
 
     def evaluate(
         self, x: npt.NDArray, dtype: npt.DTypeLike = np.float64
     ) -> npt.NDArray:
+        """Evaluates a Von-mises response for a given stimuli
+
+        Args:
+            x (npt.NDArray): The stimuli for which to generate a response to.
+            dtype (npt.DTypeLike, optional): The desired data type of the output. Defaults to np.float64.
+
+        Returns:
+            npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
+        """        
         kappa = self.params["kappa"]
         theta = self.params["theta"]
         return np.exp(kappa * np.cos(x - theta)) / (2 * np.pi * np.sinh(kappa))
