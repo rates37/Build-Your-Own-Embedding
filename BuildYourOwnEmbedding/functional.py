@@ -223,6 +223,19 @@ def mds(dissimilarityMatrix: npt.NDArray, nComponents: int = 3) -> npt.NDArray:
 
 
 def pca_variance_explained(dissimilarityMatrix: npt.NDArray) -> npt.NDArray:
+    """Computes PCA Variance Explained Ratios given a dissimilarity matrix.
+
+    Args:
+        dissimilarityMatrix (npt.NDArray): 
+            A square matrix of shape `(n, n)` representing the dissimilarities between
+            `n` samples. Each element at position `(i, j)` represents the dissimilarity
+            between the `i-th` and `j-th` samples.
+
+    Returns:
+        npt.NDArray: 
+            An array of shape `n` containing the PCA variance explained ratios of
+            the samples in the input matrix.
+    """
 
     # perform eigendecomposition:
     eigenvalues, _ = np.linalg.eigh(dissimilarityMatrix)
