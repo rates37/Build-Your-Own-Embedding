@@ -330,11 +330,28 @@ class GaussianResponse2D(ResponseFunction):
     def __init__(
         self, xMean: npt.number, yMean: npt.number, xStd: npt.number, yStd: npt.number
     ) -> None:
+        """Constructor for 2D Gaussian response function.
+
+        Args:
+            xMean (npt.number): The mean of the desired Gaussian response in the x-axis.
+            yMean (npt.number): The standard deviation of the desired Gaussian response in the x-axis.
+            xStd (npt.number): The mean of the desired Gaussian response in the y-axis.
+            yStd (npt.number): The standard deviation of the desired Gaussian response in the y-axis.
+        """        
         super().__init__(xMean=xMean, yMean=yMean, xStd=xStd, yStd=yStd)
 
     def evaluate(
         self, x: npt.NDArray, dtype: npt.DTypeLike = np.float64
     ) -> npt.NDArray:
+        """Evaluates the GaussianResponse2D response function for a given stimuli.
+
+        Args:
+            x (npt.NDArray): The stimuli for which to generate a response to. This stimuli should be a 2-dimensional numpy array.
+            dtype (npt.DTypeLike, optional): The desired data type of the output. Defaults to np.float64.
+
+        Returns:
+            npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
+        """        
         xVals, yVals = x  # unpack
         return dtype(
             np.exp(
