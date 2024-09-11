@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from .parameters import Parameter
-from .functional import inverse_correlation, plot_rdm, mds
+from .functional import inverse_correlation, plot_rdm, mds, pca_variance_explained
 
 ##! =====================================
 ##!             Responses:
@@ -238,13 +238,14 @@ class GaussianResponse(ResponseFunction):
     """GaussianResponse class. Is the response function for a 1-dimensional gaussian
     response model.
     """
+
     def __init__(self, mean: npt.number, std: npt.number) -> None:
         """Constructor method for the GaussianResponse response function.
 
         Args:
             mean (npt.number): The mean value for the desired Gaussian response function.
             std (npt.number): The standard deviation of the desired Gaussian response function.
-        """        
+        """
         super().__init__(mean=mean, std=std)
 
     def evaluate(
@@ -258,7 +259,7 @@ class GaussianResponse(ResponseFunction):
 
         Returns:
             npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
-        """        
+        """
         mean = self.params["mean"]
         std = self.params["std"]
         return dtype(
@@ -270,13 +271,14 @@ class SigmoidResponse(ResponseFunction):
     """SigmoidResponse class. Is the response function for a 1-dimensional sigmoid
     response model.
     """
+
     def __init__(self, alpha: npt.number, beta: npt.number) -> None:
         """Constructor for SigmoidResponse response function.
 
         Args:
             alpha (npt.number): The alpha value (steepness of slope) of the desired sigmoid response function.
             beta (npt.number): The beta value (pivot point) of the desired sigmoid response function.
-        """        
+        """
         super().__init__(alpha=alpha, beta=beta)
 
     def evaluate(
@@ -290,7 +292,7 @@ class SigmoidResponse(ResponseFunction):
 
         Returns:
             npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
-        """        
+        """
         alpha = self.params["alpha"]
         beta = self.params["beta"]
         return dtype(1 / (1 + np.exp(-alpha * (x - beta))))
@@ -300,13 +302,14 @@ class VonMisesResponse(ResponseFunction):
     """VonMisesResponse class. Is the response function for a 1-dimensional Von-mises
     response model.
     """
+
     def __init__(self, kappa: npt.number, theta: npt.number) -> None:
         """Constructor for the VonMisesResponse response function.
 
         Args:
             kappa (npt.number): The kappa value for the desired von-mises response.
             theta (npt.number): The theta value for the desired von-mises response.
-        """        
+        """
         super().__init__(kappa=kappa, theta=theta)
 
     def evaluate(
@@ -320,7 +323,7 @@ class VonMisesResponse(ResponseFunction):
 
         Returns:
             npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
-        """        
+        """
         kappa = self.params["kappa"]
         theta = self.params["theta"]
         return np.exp(kappa * np.cos(x - theta)) / (2 * np.pi * np.sinh(kappa))
@@ -337,7 +340,7 @@ class GaussianResponse2D(ResponseFunction):
             yMean (npt.number): The standard deviation of the desired Gaussian response in the x-axis.
             xStd (npt.number): The mean of the desired Gaussian response in the y-axis.
             yStd (npt.number): The standard deviation of the desired Gaussian response in the y-axis.
-        """        
+        """
         super().__init__(xMean=xMean, yMean=yMean, xStd=xStd, yStd=yStd)
 
     def evaluate(
@@ -351,7 +354,7 @@ class GaussianResponse2D(ResponseFunction):
 
         Returns:
             npt.NDArray: A numpy array containing the values of the Response to the stimulus `x`.
-        """        
+        """
         xVals, yVals = x  # unpack
         return dtype(
             np.exp(
@@ -488,17 +491,18 @@ class ResponseData:
 class ResponseSet:
     """
     A class for storing and analysing a set of neural responses.
-    
+
     The ResponseSet class provides methods to compute representational
     dissimilarity matrices (RDM) and representational geodesic topological
     matrices (RGTM), as well as functions for visualising and analysing
     responses. It supports both 1D and 2D response visualisations and also
     allows interactive plots.
-    
+
     Attributes:
         responses (List[ResponseData]): A list of ResponseData objects that store
             the neural responses and their associated parameters.
-    """    
+    """
+
     def __init__(self, responses: Union[None, List[ResponseData]] = None) -> None:
         """
         Initialise the ResponseSet with a list of response objects.
@@ -506,7 +510,7 @@ class ResponseSet:
         Args:
             responses (Union[None, List[ResponseData]], optional): A list of ResponseData
             objects representing neural responses. Defaults to None.
-        """        
+        """
         if responses:
             self.responses = responses
         else:
@@ -526,9 +530,9 @@ class ResponseSet:
             to compute dissimilarity between two responses. Defaults to inverse_correlation.
 
         Returns:
-            npt.ArrayLike: A square RDM where each entry (i, j) represents the 
+            npt.ArrayLike: A square RDM where each entry (i, j) represents the
             dissimilarity between the i-th and j-th responses.
-        """        
+        """
         n: int = len(self.responses)
         rdm: npt.NDArray = np.zeros((n, n))
 
@@ -553,7 +557,7 @@ class ResponseSet:
 
         The RGTM is computed by applying a piecewise linear transformation on the
         dissimilarity matrix based on the provided lower and upper bounds.
-        
+
         Args:
             lowerBound (npt.number): The lower bound for the transformation.
             upperBound (npt.number): The upper bound for the transformation.
@@ -562,7 +566,7 @@ class ResponseSet:
 
         Returns:
             npt.ArrayLike: The computed RGTM matrix.
-        """        
+        """
         assert lowerBound <= upperBound
 
         n: int = len(self.responses)
@@ -614,7 +618,7 @@ class ResponseSet:
             title (str, optional): Title of the plot. Defaults to "Representational Geo-Topological Matrix".
             figsize (Tuple[int], optional):  Size of the figure. Defaults to (7, 7).
             dissimilarityLabel (str, optional): Label for the colour bar. Defaults to "Dissimilarity".
-        """        
+        """
         rgtm: npt.NDArray = self.compute_rgtm(
             lowerBound, upperBound, dissimilarityMetric
         )
@@ -711,10 +715,9 @@ class ResponseSet:
             title (str, optional): Title of the plot. Defaults to None.
             figsize (Tuple[int], optional): Size of the figure. Defaults to (7, 7).
             dissimilarityLabel (str, optional): Label for the colour bar. Defaults to "Dissimilarity".
-        """        
+        """
         rdm = self.compute_rdm(dissimilarityMetric)
         plot_rdm(rdm, labels, cmap, title, figsize, dissimilarityLabel)
-
 
     def plot_responses(
         self,
@@ -726,8 +729,8 @@ class ResponseSet:
         hoverEffects: bool = True,  # if false will not add hover effect to plot
     ) -> None:
         """
-        Plots the responses in 1D or 2D format. 
-        
+        Plots the responses in 1D or 2D format.
+
         Higher dimensional plots are not currently supported.
 
         Args:
@@ -740,17 +743,21 @@ class ResponseSet:
 
         Raises:
             NotImplementedError: If the ResponseData represents 3-dimensional or higher curves.
-        """        
+        """
         responseShape = list(self.responses[0].response.shape)
-        
+
         # plot 1-d responses:
         if len(responseShape) == 1:
             self._plot_responses_1d(figsize, xlabel, ylabel, title, grid, hoverEffects)
         # plot 2-d responses:
         elif len(responseShape) == 2:
-            self._plot_responses_2d(figsize=figsize, xlabel=xlabel, ylabel=ylabel, title=title)
+            self._plot_responses_2d(
+                figsize=figsize, xlabel=xlabel, ylabel=ylabel, title=title
+            )
         else:
-            raise NotImplementedError("plotting responses higher than two dimensions is not currently supported")
+            raise NotImplementedError(
+                "plotting responses higher than two dimensions is not currently supported"
+            )
 
     def _plot_responses_1d(
         self,
@@ -760,7 +767,7 @@ class ResponseSet:
         title: str = "Responses",
         grid: bool = False,
         hoverEffects: bool = True,  # if false will not add hover effect to plot
-        ) -> None:
+    ) -> None:
         # plot the responses:
         plt.figure(figsize=figsize)
         plottedResponses = []
@@ -791,7 +798,7 @@ class ResponseSet:
                 )  # todo: make these parameters variable
 
         plt.show()
-        
+
     def _plot_responses_2d(
         self,
         figsize: Tuple[int] = (7, 7),
@@ -799,45 +806,49 @@ class ResponseSet:
         zlabel: str = "Stimuli 2",
         ylabel: str = "Response",
         title: str = "2D Tuning Curve Visualisation",
-        cmap: str = 'viridis',
+        cmap: str = "viridis",
     ) -> None:
         # plot the responses:
         fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(111, projection='3d')
-        
+        ax = fig.add_subplot(111, projection="3d")
+
         self.currentResponseIndex = 0
-        
+
         # function to click through plot:
         def update_plot(responseIndex: int) -> None:
             ax.clear()
             response = self.responses[responseIndex].response
-            x,y = self.responses[responseIndex].x
-            
-            ax.plot_surface(x,y, response, cmap = cmap)
+            x, y = self.responses[responseIndex].x
+
+            ax.plot_surface(x, y, response, cmap=cmap)
             ax.set_xlabel(xlabel)
             ax.set_ylabel(ylabel)
             ax.set_zlabel(zlabel)
             ax.set_title(title)
             plt.draw()
-        
+
         update_plot(self.currentResponseIndex)
-        
+
         # function for when next button is clicked:
         def next_response(e) -> None:
-            self.currentResponseIndex = (self.currentResponseIndex+1)%len(self.responses)
+            self.currentResponseIndex = (self.currentResponseIndex + 1) % len(
+                self.responses
+            )
             update_plot(self.currentResponseIndex)
-        
+
         # function for when previous button is clicked:
         def prev_response(e) -> None:
-            self.currentResponseIndex = (self.currentResponseIndex-1)%len(self.responses)
+            self.currentResponseIndex = (self.currentResponseIndex - 1) % len(
+                self.responses
+            )
             update_plot(self.currentResponseIndex)
-        
+
         # add buttons for interactivity:
         axNext = plt.axes([0.8, 0.05, 0.1, 0.075])
-        btnNext = Button(axNext, 'Next')
+        btnNext = Button(axNext, "Next")
         btnNext.on_clicked(next_response)
         axPrev = plt.axes([0.7, 0.05, 0.1, 0.075])
-        btnPrev = Button(axPrev, 'Previous')
+        btnPrev = Button(axPrev, "Previous")
         btnPrev.on_clicked(prev_response)
         plt.show()
 
@@ -861,9 +872,9 @@ class ResponseSet:
         This method computes a 3D MDS embedding from the dissimilarity matrix of the responses
         and visualises the responses in a 3D scatter plot. The color of each point in the scatter
         plot can be customized based on response parameters or a user-defined function.
-    
+
         Args:
-            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): 
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional):
                 A function to compute the dissimilarity between two responses. Defaults to inverse_correlation.
             xlabel (str, optional): Label for the x-axis of the MDS plot. Defaults to "MDS Dimension 1".
             ylabel (str, optional): Label for the y-axis of the MDS plot. Defaults to "MDS Dimension 2".
@@ -872,12 +883,12 @@ class ResponseSet:
             cbarLabel (Union[str, None], optional): Label for the colour bar. Defaults to None.
             title (str, optional): Title of the plot. Defaults to None.
             figsize (Tuple[int], optional):  The size of the figure. Defaults to (7, 7).
-            responseToColour (Union[Callable[[ResponseData], npt.number], str, None], optional): 
-                A function or string to define the color mapping for the scatter points. If 
-                a string is passed, it should be the name of a parameter in the responses. 
-                If a callable is passed, it should be a function that maps a `ResponseData` 
+            responseToColour (Union[Callable[[ResponseData], npt.number], str, None], optional):
+                A function or string to define the color mapping for the scatter points. If
+                a string is passed, it should be the name of a parameter in the responses.
+                If a callable is passed, it should be a function that maps a `ResponseData`
                 object to a numeric value for coloring the points. Defaults to None.
-        """        
+        """
         # compute dissimilarity
         rdm = self.compute_rdm(dissimilarityMetric)
 
@@ -945,9 +956,9 @@ class ResponseSet:
         This method computes a 2D MDS embedding from the dissimilarity matrix of the responses
         and visualises the responses in a 2D scatter plot. The color of each point in the scatter
         plot can be customized based on response parameters or a user-defined function.
-    
+
         Args:
-            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): 
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional):
                 A function to compute the dissimilarity between two responses. Defaults to inverse_correlation.
             xlabel (str, optional): Label for the x-axis of the MDS plot. Defaults to "MDS Dimension 1".
             ylabel (str, optional): Label for the y-axis of the MDS plot. Defaults to "MDS Dimension 2".
@@ -955,12 +966,12 @@ class ResponseSet:
             cbarLabel (Union[str, None], optional): Label for the colour bar. Defaults to None.
             title (str, optional): Title of the plot. Defaults to None.
             figsize (Tuple[int], optional):  The size of the figure. Defaults to (7, 7).
-            responseToColour (Union[Callable[[ResponseData], npt.number], str, None], optional): 
-                A function or string to define the color mapping for the scatter points. If 
-                a string is passed, it should be the name of a parameter in the responses. 
-                If a callable is passed, it should be a function that maps a `ResponseData` 
+            responseToColour (Union[Callable[[ResponseData], npt.number], str, None], optional):
+                A function or string to define the color mapping for the scatter points. If
+                a string is passed, it should be the name of a parameter in the responses.
+                If a callable is passed, it should be a function that maps a `ResponseData`
                 object to a numeric value for coloring the points. Defaults to None.
-        """        
+        """
         # compute dissimilarity
         rdm = self.compute_rdm(dissimilarityMetric)
 
@@ -969,7 +980,7 @@ class ResponseSet:
 
         # display:
         fig = plt.figure(figsize=figsize)
-        ax = fig.figure.subplots(1,1)
+        ax = fig.figure.subplots(1, 1)
 
         # get colours / values based on colorFunction (if it exists)
         if responseToColour:
@@ -1007,3 +1018,46 @@ class ResponseSet:
 
         plt.show()
 
+    def plot_PCA_variance_explained(
+        self,
+        dissimilarityMetric: Callable[
+            [npt.ArrayLike, npt.ArrayLike], npt.number
+        ] = inverse_correlation,
+        xlabel: str = "Number of Principal Components",
+        ylabel: str = "Variance Explained",
+        title: str = "Variance Explained vs. Number of Principal Components",
+        figsize: Tuple[int] = (7, 7),
+        grid: bool = False,
+    ) -> None:
+        """
+        Plots the variance explained by each principal component from PCA on the dissimilarity matrix.
+
+        This method computes the Principal Component Analysis (PCA) of the dissimilarity matrix
+        and visualises the variance explained by each principal component in a line plot. This
+        provides insight into how much variance each component captures, helping to determine
+        how many components are needed for sufficient variance representation.
+
+        Args:
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional):
+                A function to compute the dissimilarity between two responses. Defaults to inverse_correlation.
+            xlabel (str, optional): Label for the x-axis. Defaults to 'Number of Principal Components'.
+            ylabel (str, optional): Label for the y-axis. Defaults to 'Variance Explained'.
+            title (str, optional): Title of the plot. Defaults to 'Variance Explained vs. Number of Principal Components'.
+            figsize (Tuple[int], optional): Size of the figure. Defaults to (7, 7).
+            grid (bool, optional): Whether to show grid lines on the plot. Defaults to False.
+        """
+        # compute dissimilarity
+        rdm = self.compute_rdm(dissimilarityMetric)
+
+        # compute PCA variance explained:
+        pcaVarianceExplained = pca_variance_explained(rdm)
+
+        plt.figure(figsize=figsize)
+        plt.plot(
+            range(1, len(pcaVarianceExplained) + 1), pcaVarianceExplained, marker="o"
+        )
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.grid(grid)
+        plt.show()
