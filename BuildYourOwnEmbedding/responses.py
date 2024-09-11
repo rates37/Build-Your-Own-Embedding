@@ -925,3 +925,85 @@ class ResponseSet:
             cb.set_label(cbarLabel)
 
         plt.show()
+
+    def plot_2D_mds(
+        self,
+        dissimilarityMetric: Callable[
+            [npt.ArrayLike, npt.ArrayLike], npt.number
+        ] = inverse_correlation,
+        xlabel: str = "MDS Dimension 1",
+        ylabel: str = "MDS Dimension 2",
+        cmap: str = "viridis",
+        cbarLabel: Union[str, None] = None,
+        title: str = None,
+        figsize: Tuple[int] = (7, 7),
+        responseToColour: Union[Callable[[ResponseData], npt.number], str, None] = None,
+    ) -> None:
+        """
+        Plots a 2D Multidimensional Scaling (MDS) scatter plot for the stored responses.
+
+        This method computes a 2D MDS embedding from the dissimilarity matrix of the responses
+        and visualises the responses in a 2D scatter plot. The color of each point in the scatter
+        plot can be customized based on response parameters or a user-defined function.
+    
+        Args:
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): 
+                A function to compute the dissimilarity between two responses. Defaults to inverse_correlation.
+            xlabel (str, optional): Label for the x-axis of the MDS plot. Defaults to "MDS Dimension 1".
+            ylabel (str, optional): Label for the y-axis of the MDS plot. Defaults to "MDS Dimension 2".
+            cmap (str, optional): The colourmap used for coloring the scatter points. Defaults to "viridis".
+            cbarLabel (Union[str, None], optional): Label for the colour bar. Defaults to None.
+            title (str, optional): Title of the plot. Defaults to None.
+            figsize (Tuple[int], optional):  The size of the figure. Defaults to (7, 7).
+            responseToColour (Union[Callable[[ResponseData], npt.number], str, None], optional): 
+                A function or string to define the color mapping for the scatter points. If 
+                a string is passed, it should be the name of a parameter in the responses. 
+                If a callable is passed, it should be a function that maps a `ResponseData` 
+                object to a numeric value for coloring the points. Defaults to None.
+        """        
+        # compute dissimilarity
+        rdm = self.compute_rdm(dissimilarityMetric)
+
+        # compute 3D MDS:
+        mdsCoords = mds(rdm, nComponents=2)
+
+        # display:
+        fig = plt.figure(figsize=figsize)
+        ax = fig.figure.subplots(1,1)
+
+        # get colours / values based on colorFunction (if it exists)
+        if responseToColour:
+            if type(responseToColour) == str:
+                colours = [
+                    response.params[responseToColour] for response in self.responses
+                ]
+            elif callable(responseToColour):
+                colours = [responseToColour(response) for response in self.responses]
+        else:
+            # use first parameter value as default if no colour value is provided
+            colours = [
+                next(iter(response.params.values())) for response in self.responses
+            ]
+
+        # create the scatter plot:
+        scat = ax.scatter(
+            mdsCoords[:, 0],
+            mdsCoords[:, 1],
+            c=colours,
+            cmap=cmap,
+            marker="o",
+            s=100,
+        )
+
+        # set labels and title:
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+
+        # add colour bar:
+        cb = fig.colorbar(scat, ax=ax, shrink=0.5, aspect=10)  # ?
+        if cbarLabel:
+            cb.set_label(cbarLabel)
+
+        plt.show()
+
