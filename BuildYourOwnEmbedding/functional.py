@@ -2,6 +2,7 @@ import numpy as np
 import numpy.typing as npt
 from typing import List, Union, Tuple
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
 
 ##! =====================================
@@ -236,12 +237,7 @@ def pca_variance_explained(dissimilarityMatrix: npt.NDArray) -> npt.NDArray:
             An array of shape `n` containing the PCA variance explained ratios of
             the samples in the input matrix.
     """
-
-    # perform eigendecomposition:
-    eigenvalues, _ = np.linalg.eigh(dissimilarityMatrix)
-    eigenvalues = eigenvalues[::-1]  # sorts in descending order
-
-    # compute variance explained:
-    varianceSum = np.sum(eigenvalues)
-    varianceRatios = eigenvalues / varianceSum
-    return varianceRatios
+    pca = PCA()
+    pca.fit(dissimilarityMatrix)
+    return pca.explained_variance_ratio_
+    
