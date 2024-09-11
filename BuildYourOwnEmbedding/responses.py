@@ -727,6 +727,8 @@ class ResponseSet:
         title: str = "Responses",
         grid: bool = False,
         hoverEffects: bool = True,  # if false will not add hover effect to plot
+        *args,
+        **kwargs
     ) -> None:
         """
         Plots the responses in 1D or 2D format.
@@ -748,11 +750,11 @@ class ResponseSet:
 
         # plot 1-d responses:
         if len(responseShape) == 1:
-            self._plot_responses_1d(figsize, xlabel, ylabel, title, grid, hoverEffects)
+            self._plot_responses_1d(figsize, xlabel, ylabel, title, grid, hoverEffects, *args, **kwargs)
         # plot 2-d responses:
         elif len(responseShape) == 2:
             self._plot_responses_2d(
-                figsize=figsize, xlabel=xlabel, ylabel=ylabel, title=title
+                figsize=figsize, xlabel=xlabel, ylabel=ylabel, title=title, *args, **kwargs
             )
         else:
             raise NotImplementedError(
@@ -807,50 +809,98 @@ class ResponseSet:
         ylabel: str = "Response",
         title: str = "2D Tuning Curve Visualisation",
         cmap: str = "viridis",
+        type: str = "heatmap"  # can be "heatmap" or "surfaceplot"
     ) -> None:
-        # plot the responses:
-        fig = plt.figure(figsize=figsize)
-        ax = fig.add_subplot(111, projection="3d")
+        if type == "surfaceplot":
+            # plot the responses:
+            fig = plt.figure(figsize=figsize)
+            ax = fig.add_subplot(111, projection="3d")
 
-        self.currentResponseIndex = 0
+            self.currentResponseIndex = 0
 
-        # function to click through plot:
-        def update_plot(responseIndex: int) -> None:
-            ax.clear()
-            response = self.responses[responseIndex].response
-            x, y = self.responses[responseIndex].x
+            # function to click through plot:
+            def update_plot(responseIndex: int) -> None:
+                ax.clear()
+                response = self.responses[responseIndex].response
+                x, y = self.responses[responseIndex].x
 
-            ax.plot_surface(x, y, response, cmap=cmap)
-            ax.set_xlabel(xlabel)
-            ax.set_ylabel(ylabel)
-            ax.set_zlabel(zlabel)
-            ax.set_title(title)
-            plt.draw()
+                ax.plot_surface(x, y, response, cmap=cmap)
+                ax.set_xlabel(xlabel)
+                ax.set_ylabel(ylabel)
+                ax.set_zlabel(zlabel)
+                ax.set_title(title)
+                plt.draw()
 
-        update_plot(self.currentResponseIndex)
-
-        # function for when next button is clicked:
-        def next_response(e) -> None:
-            self.currentResponseIndex = (self.currentResponseIndex + 1) % len(
-                self.responses
-            )
             update_plot(self.currentResponseIndex)
 
-        # function for when previous button is clicked:
-        def prev_response(e) -> None:
-            self.currentResponseIndex = (self.currentResponseIndex - 1) % len(
-                self.responses
-            )
+            # function for when next button is clicked:
+            def next_response(e) -> None:
+                self.currentResponseIndex = (self.currentResponseIndex + 1) % len(
+                    self.responses
+                )
+                update_plot(self.currentResponseIndex)
+
+            # function for when previous button is clicked:
+            def prev_response(e) -> None:
+                self.currentResponseIndex = (self.currentResponseIndex - 1) % len(
+                    self.responses
+                )
+                update_plot(self.currentResponseIndex)
+
+            # add buttons for interactivity:
+            axNext = plt.axes([0.8, 0.05, 0.1, 0.075])
+            btnNext = Button(axNext, "Next")
+            btnNext.on_clicked(next_response)
+            axPrev = plt.axes([0.7, 0.05, 0.1, 0.075])
+            btnPrev = Button(axPrev, "Previous")
+            btnPrev.on_clicked(prev_response)
+            plt.show()
+        elif type == "heatmap":
+            # Plot the responses as a heatmap
+            fig = plt.figure(figsize=figsize)
+            ax = fig.add_subplot(111)
+            self.currentResponseIndex = 0
+            from matplotlib.colorbar import Colorbar
+            colourbar : Colorbar = None
+            # function to update heatmap plot
+            def update_plot(responseIndex: int) -> None:
+                nonlocal colourbar
+                # fig.clear()
+                # ax = fig.add_subplot(111)
+                response = self.responses[responseIndex].response
+                x, y = self.responses[responseIndex].x
+
+                c = ax.imshow(response, cmap=cmap, origin='lower', extent=[x.min(), x.max(), y.min(), y.max()])
+                ax.set_xlabel(xlabel)
+                ax.set_ylabel(ylabel)
+                ax.set_title(title)
+                # colourbar = fig.colorbar(c, ax=ax)
+                plt.draw()
+
             update_plot(self.currentResponseIndex)
 
-        # add buttons for interactivity:
-        axNext = plt.axes([0.8, 0.05, 0.1, 0.075])
-        btnNext = Button(axNext, "Next")
-        btnNext.on_clicked(next_response)
-        axPrev = plt.axes([0.7, 0.05, 0.1, 0.075])
-        btnPrev = Button(axPrev, "Previous")
-        btnPrev.on_clicked(prev_response)
-        plt.show()
+            # function for when next button is clicked:
+            def next_response(e) -> None:
+                self.currentResponseIndex = (self.currentResponseIndex + 1) % len(
+                    self.responses
+                )
+                update_plot(self.currentResponseIndex)
+
+            # function for when previous button is clicked:
+            def prev_response(e) -> None:
+                self.currentResponseIndex = (self.currentResponseIndex - 1) % len(
+                    self.responses
+                )
+                update_plot(self.currentResponseIndex)
+
+            # add buttons for interactivity:
+            axNext = plt.axes([0.8, 0, 0.1, 0.075])
+            btnNext = Button(axNext, "Next")
+            btnNext.on_clicked(next_response)
+            axPrev = plt.axes([0.7, 0, 0.1, 0.075])
+            btnPrev = Button(axPrev, "Previous")
+            btnPrev.on_clicked(prev_response)
+            plt.show()
 
     def plot_3D_mds(
         self,
