@@ -486,7 +486,27 @@ class ResponseData:
 
 # stores a set of responses
 class ResponseSet:
+    """
+    A class for storing and analysing a set of neural responses.
+    
+    The ResponseSet class provides methods to compute representational
+    dissimilarity matrices (RDM) and representational geodesic topological
+    matrices (RGTM), as well as functions for visualising and analysing
+    responses. It supports both 1D and 2D response visualisations and also
+    allows interactive plots.
+    
+    Attributes:
+        responses (List[ResponseData]): A list of ResponseData objects that store
+            the neural responses and their associated parameters.
+    """    
     def __init__(self, responses: Union[None, List[ResponseData]] = None) -> None:
+        """
+        Initialise the ResponseSet with a list of response objects.
+
+        Args:
+            responses (Union[None, List[ResponseData]], optional): A list of ResponseData
+            objects representing neural responses. Defaults to None.
+        """        
         if responses:
             self.responses = responses
         else:
@@ -498,6 +518,17 @@ class ResponseSet:
             [npt.ArrayLike, npt.ArrayLike], npt.number
         ] = inverse_correlation,
     ) -> npt.ArrayLike:
+        """
+        Computes the Representational Dissimilarity Matrix (RDM) for the stored responses
+
+        Args:
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): A function
+            to compute dissimilarity between two responses. Defaults to inverse_correlation.
+
+        Returns:
+            npt.ArrayLike: A square RDM where each entry (i, j) represents the 
+            dissimilarity between the i-th and j-th responses.
+        """        
         n: int = len(self.responses)
         rdm: npt.NDArray = np.zeros((n, n))
 
@@ -517,7 +548,21 @@ class ResponseSet:
             [npt.ArrayLike, npt.ArrayLike], npt.number
         ] = inverse_correlation,
     ) -> npt.ArrayLike:
+        """
+        Computes the Representational Geodesic Topological Matrix (RGTM).
 
+        The RGTM is computed by applying a piecewise linear transformation on the
+        dissimilarity matrix based on the provided lower and upper bounds.
+        
+        Args:
+            lowerBound (npt.number): The lower bound for the transformation.
+            upperBound (npt.number): The upper bound for the transformation.
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): A function
+            to compute dissimilarity between two responses. Defaults to inverse_correlation.
+
+        Returns:
+            npt.ArrayLike: The computed RGTM matrix.
+        """        
         assert lowerBound <= upperBound
 
         n: int = len(self.responses)
@@ -556,7 +601,20 @@ class ResponseSet:
         figsize: Tuple[int] = (7, 7),
         dissimilarityLabel: str = "Dissimilarity",
     ) -> None:
+        """
+        Plots the Representational Geo-Topological Matrix (RGTM) with optional interactivity.
 
+        Args:
+            lowerBound (npt.number, optional): The lower bound for the RGTM transformation. Defaults to 0.
+            upperBound (npt.number, optional): The upper bound for the RGTM transformation. Defaults to 1.
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): Function to compute dissimilarity between two responses. Defaults to inverse_correlation.
+            interactive (bool, optional): Whether to include sliders for adjusting the bounds interactively. Defaults to True.
+            labels (Union[List[str], None], optional): List of labels for the axes. Defaults to None.
+            cmap (str, optional): Colourmap used for plotting. Defaults to "viridis".
+            title (str, optional): Title of the plot. Defaults to "Representational Geo-Topological Matrix".
+            figsize (Tuple[int], optional):  Size of the figure. Defaults to (7, 7).
+            dissimilarityLabel (str, optional): Label for the colour bar. Defaults to "Dissimilarity".
+        """        
         rgtm: npt.NDArray = self.compute_rgtm(
             lowerBound, upperBound, dissimilarityMetric
         )
@@ -569,10 +627,9 @@ class ResponseSet:
         plt.colorbar(heatmap, ax=ax, label=dissimilarityLabel)
         ax.set_title(title)
 
-        # todo: show labels if not none:
-        # if labels:
-        #     ax.set_xticks(labels)
-        #     ax.set_yticks(labels)
+        if labels:
+            ax.set_xticks(labels)
+            ax.set_yticks(labels)
 
         # if interactive, add interactivity behaviour:
         if interactive:
@@ -644,9 +701,20 @@ class ResponseSet:
         figsize: Tuple[int] = (7, 7),
         dissimilarityLabel: str = "Dissimilarity",
     ) -> None:
+        """
+        Plots the Representational Dissimilarity Matrix (RDM) for the stored responses.
+
+        Args:
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): Function to compute dissimilarity between two responses. Defaults to inverse_correlation.
+            labels (Union[List[str], None], optional): Labels for the plot's x and y axes. Defaults to None.
+            cmap (str, optional): Colourmap for the plot. Defaults to "viridis".
+            title (str, optional): Title of the plot. Defaults to None.
+            figsize (Tuple[int], optional): Size of the figure. Defaults to (7, 7).
+            dissimilarityLabel (str, optional): Label for the colour bar. Defaults to "Dissimilarity".
+        """        
         rdm = self.compute_rdm(dissimilarityMetric)
         plot_rdm(rdm, labels, cmap, title, figsize, dissimilarityLabel)
-        pass
+
 
     def plot_responses(
         self,
@@ -657,6 +725,22 @@ class ResponseSet:
         grid: bool = False,
         hoverEffects: bool = True,  # if false will not add hover effect to plot
     ) -> None:
+        """
+        Plots the responses in 1D or 2D format. 
+        
+        Higher dimensional plots are not currently supported.
+
+        Args:
+            figsize (Tuple[int], optional): Size of the figure. Defaults to (7, 7).
+            xlabel (str, optional): Label for the x-axis. Defaults to "Stimuli".
+            ylabel (str, optional): Label for the y-axis. Defaults to "Response".
+            title (str, optional): Title of the plot. Defaults to "Responses".
+            grid (bool, optional): Whether to display a grid on the plot. Defaults to False.
+            hoverEffects (bool, optional): If True, adds hover effects to the plot. Defaults to True.
+
+        Raises:
+            NotImplementedError: If the ResponseData represents 3-dimensional or higher curves.
+        """        
         responseShape = list(self.responses[0].response.shape)
         
         # plot 1-d responses:
@@ -771,7 +855,29 @@ class ResponseSet:
         figsize: Tuple[int] = (7, 7),
         responseToColour: Union[Callable[[ResponseData], npt.number], str, None] = None,
     ) -> None:
+        """
+        Plots a 3D Multidimensional Scaling (MDS) scatter plot for the stored responses.
 
+        This method computes a 3D MDS embedding from the dissimilarity matrix of the responses
+        and visualises the responses in a 3D scatter plot. The color of each point in the scatter
+        plot can be customized based on response parameters or a user-defined function.
+    
+        Args:
+            dissimilarityMetric (Callable[ [npt.ArrayLike, npt.ArrayLike], npt.number ], optional): 
+                A function to compute the dissimilarity between two responses. Defaults to inverse_correlation.
+            xlabel (str, optional): Label for the x-axis of the MDS plot. Defaults to "MDS Dimension 1".
+            ylabel (str, optional): Label for the y-axis of the MDS plot. Defaults to "MDS Dimension 2".
+            zlabel (str, optional): Label for the z-axis of the MDS plot. Defaults to "MDS Dimension 3".
+            cmap (str, optional): The colourmap used for coloring the scatter points. Defaults to "viridis".
+            cbarLabel (Union[str, None], optional): Label for the colour bar. Defaults to None.
+            title (str, optional): Title of the plot. Defaults to None.
+            figsize (Tuple[int], optional):  The size of the figure. Defaults to (7, 7).
+            responseToColour (Union[Callable[[ResponseData], npt.number], str, None], optional): 
+                A function or string to define the color mapping for the scatter points. If 
+                a string is passed, it should be the name of a parameter in the responses. 
+                If a callable is passed, it should be a function that maps a `ResponseData` 
+                object to a numeric value for coloring the points. Defaults to None.
+        """        
         # compute dissimilarity
         rdm = self.compute_rdm(dissimilarityMetric)
 
