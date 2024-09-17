@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 from .parameters import Parameter
-from .functional import inverse_correlation, plot_rdm, mds, pca_variance_explained
+from .functional import inverse_correlation, plot_rdm, mds, pca_variance_explained, pca
 
 ##! =====================================
 ##!             Responses:
@@ -442,7 +442,7 @@ class ResponseManager:
 
     def generate_responses(
         self, x: npt.NDArray, noiseLevel: npt.number = 0, numSamples: int = 1
-    ) -> List[ResponseData]:
+    ) -> ResponseSet:
         """
         Generates responses for each combination of parameter values
 
@@ -454,14 +454,14 @@ class ResponseManager:
                 The number of times to sample each combination of parameters. Defaults to 1.
 
         Returns:
-            List[ResponseData]: List of ResponseData objects containing each response and the corresponding parameters.
+            ResponseSet: A ResponseSet object containing each response and the corresponding parameters.
         """
         paramCombinations = self._get_combinations()
         responses = []
         for params in paramCombinations:
             for _ in range(numSamples):
                 responses.append(self._generate_response(x, params, noiseLevel))
-        return responses
+        return ResponseSet(responses=responses)
 
 
 @dataclass
@@ -1111,3 +1111,21 @@ class ResponseSet:
         plt.title(title)
         plt.grid(grid)
         plt.show()
+
+    def plot_2D_PCA(
+        self,
+        xlabel: str = "PC 1",
+        ylabel: str = "PC 2",
+        title: str = "2D PCA of Embedding",
+        figsize: Tuple[int] = (7, 7),
+    ) -> None:
+        curves = np.array([r.response for r in self.responses])
+        pcs = pca(curves, nComponents=2)
+        
+        plt.figure(figsize=figsize)
+        plt.scatter(pcs[:, 0], pcs[:, 1])
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.title(title)
+        plt.show()
+        
