@@ -84,7 +84,7 @@ def cosine_similarity(
 
     This function calculates the cosine similarity, between two input
     arrays, `x1` and `x2`, and returns the result cast to the specified `dtype`.
-    If the input arrays are not 1D, they are flattened and then the cosine 
+    If the input arrays are not 1D, they are flattened and then the cosine
     similarity is computed.
 
     Args:
@@ -100,7 +100,9 @@ def cosine_similarity(
     """
     x1Flat = np.hstack(x1)
     x2Flat = np.hstack(x2)
-    return dtype(np.dot(x1Flat, x2Flat) / (np.linalg.norm(x1Flat) * np.linalg.norm(x2Flat)))
+    return dtype(
+        np.dot(x1Flat, x2Flat) / (np.linalg.norm(x1Flat) * np.linalg.norm(x2Flat))
+    )
 
 
 ##! =====================================
@@ -227,17 +229,30 @@ def pca_variance_explained(dissimilarityMatrix: npt.NDArray) -> npt.NDArray:
     """Computes PCA Variance Explained Ratios given a dissimilarity matrix.
 
     Args:
-        dissimilarityMatrix (npt.NDArray): 
+        dissimilarityMatrix (npt.NDArray):
             A square matrix of shape `(n, n)` representing the dissimilarities between
             `n` samples. Each element at position `(i, j)` represents the dissimilarity
             between the `i-th` and `j-th` samples.
 
     Returns:
-        npt.NDArray: 
+        npt.NDArray:
             An array of shape `n` containing the PCA variance explained ratios of
             the samples in the input matrix.
     """
     pca = PCA()
     pca.fit(dissimilarityMatrix)
     return pca.explained_variance_ratio_
-    
+
+
+def pca(matrix: npt.NDArray, nComponents) -> npt.NDArray:
+    """Computes the principal components of a given 2d matrix
+
+    Args:
+        matrix (npt.NDArray): A 2D array of the responses
+        nComponents (_type_): The number of principal components to consider
+
+    Returns:
+        npt.NDArray: A n x `nComponents` array, containing the values of the principal components.
+    """
+    pca = PCA(n_components=nComponents)
+    return pca.fit_transform(matrix)
