@@ -10,6 +10,7 @@ import mplcursors
 from matplotlib.widgets import Slider, Button
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import warnings
 
 from .parameters import Parameter
 from .functional import inverse_correlation, plot_rdm, mds, pca_variance_explained, pca
@@ -97,7 +98,7 @@ class ResponseFunction(ABC):
         """
         pass
 
-    def __call__(self, x: npt.NDArray, noiseLevel: npt.number = 0) -> npt.NDArray:
+    def __call__(self, x: npt.NDArray, noiseLevel: npt.number = 0, noiseType: str = 'Gaussian') -> npt.NDArray:
         """
         Compute the response by calling the evaluate method.
 
@@ -109,15 +110,24 @@ class ResponseFunction(ABC):
                 The input data for which the response is evaluated.
             noiseLevel (npt.number, optional):
                 The standard deviation of Gaussian noise to be added to the response. Defaults to 0 (no noise).
+            noiseType (str, optional):
+                The type of noise to add. Defaults to 'Gaussian'.
 
         Returns:
             npt.NDArray:
                 The response values computed by the `evaluate` method.
         """
         response = self.evaluate(x)
-        if noiseLevel > 0:
-            response += np.random.normal(0, noiseLevel, response.shape)
-        return response
+        
+        if noiseLevel == 0:
+            return response
+
+        if noiseType == 'Gaussian':
+            return response + np.random.normal(0, noiseLevel, response.shape)
+            
+        # Unknown noise type
+        warnings.warn(f"Unknown noise type {noiseType}. Defaulting to Gaussian noise.")
+        return response + np.random.normal(0, noiseLevel, response.shape)
 
     def __add__(self, other: ResponseFunction) -> CompositeResponse:
         """
