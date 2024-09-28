@@ -98,7 +98,9 @@ class ResponseFunction(ABC):
         """
         pass
 
-    def __call__(self, x: npt.NDArray, noiseLevel: npt.number = 0, noiseType: str = 'Gaussian') -> npt.NDArray:
+    def __call__(
+        self, x: npt.NDArray, noiseLevel: npt.number = 0, noiseType: str = "Gaussian"
+    ) -> npt.NDArray:
         """
         Compute the response by calling the evaluate method.
 
@@ -118,13 +120,13 @@ class ResponseFunction(ABC):
                 The response values computed by the `evaluate` method.
         """
         response = self.evaluate(x)
-        
+
         if noiseLevel == 0:
             return response
 
-        if noiseType == 'Gaussian':
+        if noiseType == "Gaussian":
             return response + np.random.normal(0, noiseLevel, response.shape)
-            
+
         # Unknown noise type
         warnings.warn(f"Unknown noise type {noiseType}. Defaulting to Gaussian noise.")
         return response + np.random.normal(0, noiseLevel, response.shape)
@@ -321,15 +323,15 @@ class VonMisesResponse(ResponseFunction):
             theta (npt.number): The theta value for the desired von-mises response.
         """
         super().__init__(kappa=kappa, theta=theta)
-        
+
     def _I0(self, kappa: npt.number, numTerms: int = 50) -> npt.number:
         # modified bessel function of the first kind of order 0, calculated with a Maclaurin series expansion
         result = 0
         cumulativeFactorial = 1
-        
-        for i in range(1, numTerms+1):
+
+        for i in range(1, numTerms + 1):
             cumulativeFactorial *= i
-            result += (kappa/2)**(2*i) / (cumulativeFactorial ** 2)
+            result += (kappa / 2) ** (2 * i) / (cumulativeFactorial**2)
         return result
 
     def evaluate(
@@ -748,7 +750,7 @@ class ResponseSet:
         grid: bool = False,
         hoverEffects: bool = True,  # if false will not add hover effect to plot
         *args,
-        **kwargs
+        **kwargs,
     ) -> None:
         """
         Plots the responses in 1D or 2D format.
@@ -770,11 +772,18 @@ class ResponseSet:
 
         # plot 1-d responses:
         if len(responseShape) == 1:
-            self._plot_responses_1d(figsize, xlabel, ylabel, title, grid, hoverEffects, *args, **kwargs)
+            self._plot_responses_1d(
+                figsize, xlabel, ylabel, title, grid, hoverEffects, *args, **kwargs
+            )
         # plot 2-d responses:
         elif len(responseShape) == 2:
             self._plot_responses_2d(
-                figsize=figsize, xlabel=xlabel, ylabel=ylabel, title=title, *args, **kwargs
+                figsize=figsize,
+                xlabel=xlabel,
+                ylabel=ylabel,
+                title=title,
+                *args,
+                **kwargs,
             )
         else:
             raise NotImplementedError(
@@ -829,7 +838,7 @@ class ResponseSet:
         ylabel: str = "Response",
         title: str = "2D Tuning Curve Visualisation",
         cmap: str = "viridis",
-        type: str = "heatmap"  # can be "heatmap" or "surfaceplot"
+        type: str = "heatmap",  # can be "heatmap" or "surfaceplot"
     ) -> None:
         if type == "surfaceplot":
             # plot the responses:
@@ -881,7 +890,9 @@ class ResponseSet:
             ax = fig.add_subplot(111)
             self.currentResponseIndex = 0
             from matplotlib.colorbar import Colorbar
-            colourbar : Colorbar = None
+
+            colourbar: Colorbar = None
+
             # function to update heatmap plot
             def update_plot(responseIndex: int) -> None:
                 nonlocal colourbar
@@ -890,7 +901,12 @@ class ResponseSet:
                 response = self.responses[responseIndex].response
                 x, y = self.responses[responseIndex].x
 
-                c = ax.imshow(response, cmap=cmap, origin='lower', extent=[x.min(), x.max(), y.min(), y.max()])
+                c = ax.imshow(
+                    response,
+                    cmap=cmap,
+                    origin="lower",
+                    extent=[x.min(), x.max(), y.min(), y.max()],
+                )
                 ax.set_xlabel(xlabel)
                 ax.set_ylabel(ylabel)
                 ax.set_title(title)
@@ -1141,11 +1157,10 @@ class ResponseSet:
     ) -> None:
         curves = np.array([r.response for r in self.responses])
         pcs = pca(curves, nComponents=2)
-        
+
         plt.figure(figsize=figsize)
         plt.scatter(pcs[:, 0], pcs[:, 1])
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.title(title)
         plt.show()
-        
