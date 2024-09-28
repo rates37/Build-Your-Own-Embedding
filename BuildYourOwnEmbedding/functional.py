@@ -4,7 +4,6 @@ from typing import List, Union, Tuple
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
-
 ##! =====================================
 ##!          Similarity Metrics:
 ##! =====================================
@@ -269,7 +268,7 @@ def fisher_information(curves: npt.NDArray) -> npt.NDArray:
     Args:
         curves (npt.NDArray): A numpy array of the shape (numCurves, dim1, dim2,
         ..., dimN) representing the tuning curves, where `numCurves` is the number
-        of curves and `dim1, dim2, ..., dimN` are the dimensions of each response.`
+        of curves and `dim1, dim2, ..., dimN` are the dimensions of each response.
 
     Raises:
         ValueError: If the dimensionality of `curves` is not greater than a 2-dimensional
@@ -296,3 +295,52 @@ def fisher_information(curves: npt.NDArray) -> npt.NDArray:
             fi = sum(derivative**2 for derivative in derivatives)
             fiValues += fi
         return fiValues
+
+
+def mutual_information(
+    response: npt.NDArray, stimulus: npt.NDArray, integrationPrecision: int = 1000
+) -> np.number:
+    """Computes the mutual information between a single neural response and its stimulus.
+
+    Args:
+        response (npt.NDArray): Neural response with shape (dim1, dim2, ..., dimN).
+        stimulus (npt.NDArray): Corresponding stimulus with shape (dim1, dim2, ..., dimN).
+        integrationPrecision (int, optional): Number of steps to use in integration. Defaults to 1000.
+
+    Raises:
+        ValueError: If the stimulus and response are different dimensions.
+
+    Returns:
+        np.number: The mutual information between the response and the stimulus.
+    """
+    if response.shape != stimulus.shape:
+        raise ValueError("Response and Stimulus must have the same dimensions")
+
+    responseFlat = response.flatten()
+    stimulusFlat = stimulus.flatten()
+
+    # compute joint distribution:
+    jointValues = np.stack((responseFlat, stimulusFlat), axis=-1)
+    uniqueJoint, countsJoint = np.unique(jointValues, axis=0, return_counts=True)
+    jointProbabilities = countsJoint / len(responseFlat)
+
+    # Compute marginal distributions
+    uniqueResponse, countsResponse = np.unique(responseFlat, return_counts=True)
+    probResponse = countsResponse / len(responseFlat)
+
+    uniqueStimulus, countsStimulus = np.unique(stimulusFlat, return_counts=True)
+    probStimulus = countsStimulus / len(stimulusFlat)
+
+    responsePDict = {val: probResponse[i] for i, val in enumerate(uniqueResponse)}
+    stimulusPDict = {val: probStimulus[i] for i, val in enumerate(uniqueStimulus)}
+
+    mi = 0.0
+    for i, jointVal in enumerate(uniqueJoint):
+        respVal, stimVal = jointVal
+        joint_prob = jointProbabilities[i]
+        if joint_prob > 0 and responsePDict[respVal] > 0 and stimulusPDict[stimVal] > 0:
+            mi += joint_prob * np.log(
+                joint_prob / (responsePDict[respVal] * stimulusPDict[stimVal])
+            )
+
+    return mi
