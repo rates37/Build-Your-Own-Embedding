@@ -321,6 +321,16 @@ class VonMisesResponse(ResponseFunction):
             theta (npt.number): The theta value for the desired von-mises response.
         """
         super().__init__(kappa=kappa, theta=theta)
+        
+    def _I0(self, kappa: npt.number, numTerms: int = 50) -> npt.number:
+        # modified bessel function of the first kind of order 0, calculated with a Maclaurin series expansion
+        result = 0
+        cumulativeFactorial = 1
+        
+        for i in range(1, numTerms+1):
+            cumulativeFactorial *= i
+            result += (kappa/2)**(2*i) / (cumulativeFactorial ** 2)
+        return result
 
     def evaluate(
         self, x: npt.NDArray, dtype: npt.DTypeLike = np.float64
@@ -336,7 +346,7 @@ class VonMisesResponse(ResponseFunction):
         """
         kappa = self.params["kappa"]
         theta = self.params["theta"]
-        return np.exp(kappa * np.cos(x - theta)) / (2 * np.pi * np.sinh(kappa))
+        return np.exp(kappa * np.cos(x - theta)) / (2 * np.pi * self._I0(kappa))
 
 
 class GaussianResponse2D(ResponseFunction):
