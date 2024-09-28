@@ -256,3 +256,43 @@ def pca(matrix: npt.NDArray, nComponents) -> npt.NDArray:
     """
     pca = PCA(n_components=nComponents)
     return pca.fit_transform(matrix)
+
+
+##! =====================================
+##!             Information:
+##! =====================================
+def fisher_information(curves: npt.NDArray) -> npt.NDArray:
+    """Calculates the Fisher Information for a set of tuning curves.
+
+    This function supports both 1-D and arbitrary-dimensional tuning curves
+
+    Args:
+        curves (npt.NDArray): A numpy array of the shape (numCurves, dim1, dim2,
+        ..., dimN) representing the tuning curves, where `numCurves` is the number
+        of curves and `dim1, dim2, ..., dimN` are the dimensions of each response.`
+
+    Raises:
+        ValueError: If the dimensionality of `curves` is not greater than a 2-dimensional
+        array.
+
+    Returns:
+        npt.NDArray: A numpy array representing the FI values, with shape (dim1, dim2,
+        ..., dimN) for the input curves.
+    """
+    if len(curves.shape) < 2:
+        raise ValueError("curves must be at least two dimensions")
+    if len(curves.shape) == 2:
+        fiValues = np.zeros(curves[0].shape)
+
+        for i in range(curves.shape[0]):
+            derivative = np.gradient(curves[i])
+            fi = derivative**2
+            fiValues += fi
+        return fiValues
+    else:
+        fiValues = np.zeros(curves.shape[1:])
+        for i in range(curves.shape[0]):
+            derivatives = np.gradient(curves[i])
+            fi = sum(derivative**2 for derivative in derivatives)
+            fiValues += fi
+        return fiValues
