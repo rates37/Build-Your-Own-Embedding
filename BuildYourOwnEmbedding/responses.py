@@ -13,7 +13,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import warnings
 
 from .parameters import Parameter
-from .functional import inverse_correlation, plot_rdm, mds, pca_variance_explained, pca
+from .functional import inverse_correlation, plot_rdm, mds, \
+    pca_variance_explained, pca, fisher_information as fi
 
 ##! =====================================
 ##!             Responses:
@@ -1164,3 +1165,12 @@ class ResponseSet:
         plt.ylabel(ylabel)
         plt.title(title)
         plt.show()
+          
+    def fisher_information(self) -> npt.NDArray:
+        """Computes the fisher information of the set of responses
+
+        Returns:
+            npt.NDArray: A numpy array containing the fisher information of the stored responses.
+        """        
+        curves = np.array([r.response for r in self.responses]) 
+        return fi(curves)
