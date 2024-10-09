@@ -48,8 +48,8 @@ class UniformRangeParameter(Parameter):
         self, minValue: np.number, maxValue: np.number, numSamples: int
     ) -> None:
         """Constructor for UniformRangeParameter class.
-        
-        This Parameter takes on a uniform range of values between `minValue` and 
+
+        This Parameter takes on a uniform range of values between `minValue` and
         `maxValue`, with `numSamples` evenly spaced points.
 
         Args:
@@ -85,8 +85,8 @@ class RandomRangeParameter(Parameter):
         self, minValue: np.number, maxValue: np.number, numSamples: int
     ) -> None:
         """Constructor for the RandomRangeParameter class.
-        
-        This Parameter takes on a random sample of `numSamples` values between 
+
+        This Parameter takes on a random sample of `numSamples` values between
         `minValue` and `maxValue`.
 
         Args:
@@ -124,13 +124,13 @@ class FixedParameterSet(Parameter):
         dtype: npt.DTypeLike = np.float64,
     ) -> None:
         """Constructor for the FixedParameterSet class.
-        
+
         This parameter takes on a specific sequence of values.
 
         Args:
-            values (Union[npt.NDArray, List[np.number]]): A list or array 
+            values (Union[npt.NDArray, List[np.number]]): A list or array
                 containing a sequence of values that the parameter should take on
-            dtype (npt.DTypeLike, optional): The data type that the values should 
+            dtype (npt.DTypeLike, optional): The data type that the values should
                 be returned as. Defaults to np.float64.
         """
         super().__init__(len(values))
@@ -155,8 +155,8 @@ class LogRangeParameter(Parameter):
         self, minValue: np.number, maxValue: np.number, numSamples: int
     ) -> None:
         """Constructor for the LogRangeParameter class.
-        
-        This Parameter takes on a range of `numSamples` values logarithmically 
+
+        This Parameter takes on a range of `numSamples` values logarithmically
         spaced between `minValue` and `maxValue`.
 
         Args:
@@ -190,7 +190,7 @@ class ConstantParameter(Parameter):
 
     def __init__(self, value: np.number) -> None:
         """Constructor for the ConstantParameter class.
-        
+
         This Parameter always only ever takes on a single value.
 
         Args:
@@ -210,5 +210,3 @@ class ConstantParameter(Parameter):
             npt.NDArray: An array of size numSamples where all elements are the same value.
         """
         return np.full(dtype=dtype, shape=(1, 1), fill_value=self.value)
-
-    pass
