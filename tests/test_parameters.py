@@ -5,6 +5,7 @@ from BuildYourOwnEmbedding.parameters import (
     RandomRangeParameter,
     ConstantParameter,
     FixedParameterSet,
+    LogRangeParameter,
 )
 
 EPSILON = 1e-6
@@ -150,7 +151,7 @@ class TestParameters(unittest.TestCase):
         param = FixedParameterSet(values=originalValues)
         values = param.get_values()
         self.assertEqual(len(values), len(originalValues))
-        self.assertTrue(sum(abs(np.array(values) - np.array(originalValues))) < EPSILON)
+        self.assertTrue(all(abs(np.array(values) - np.array(originalValues))) < EPSILON)
 
         # Test 3:
         originalValues = [
@@ -167,7 +168,54 @@ class TestParameters(unittest.TestCase):
         param = FixedParameterSet(values=originalValues)
         values = param.get_values()
         self.assertEqual(len(values), len(originalValues))
-        self.assertTrue(sum(abs(np.array(values) - np.array(originalValues))) < EPSILON)
+        self.assertTrue(all(abs(np.array(values) - np.array(originalValues))) < EPSILON)
+
+    def test_log_range_parameter(self) -> None:
+
+        # Test 1:
+        minVal, maxVal = 1, 10
+        numSamples = 5
+        expectedRange = [minVal, maxVal]
+        expectedValues = np.array([1.0, 1.77827941, 3.16227766, 5.62341325, 10.0])
+
+        param = LogRangeParameter(
+            minValue=minVal, maxValue=maxVal, numSamples=numSamples
+        )
+        values = param.get_values()
+        self.assertEqual(len(values), numSamples)
+        self.assertTrue(
+            np.all(values >= expectedRange[0]) and np.all(values <= expectedRange[1])
+        )
+        self.assertTrue(all(abs(values - expectedValues) < EPSILON))
+
+        # Test 2:
+        minVal, maxVal = 1, 1e9
+        numSamples = 10
+        expectedRange = [minVal, maxVal]
+        expectedValues = np.array(
+            [
+                1.0e0,
+                1.0e1,
+                1.0e2,
+                1.0e3,
+                1.0e4,
+                1.0e5,
+                1.0e6,
+                1.0e7,
+                1.0e8,
+                1.0e9,
+            ]
+        )
+
+        param = LogRangeParameter(
+            minValue=minVal, maxValue=maxVal, numSamples=numSamples
+        )
+        values = param.get_values()
+        self.assertEqual(len(values), numSamples)
+        self.assertTrue(
+            np.all(values >= expectedRange[0]) and np.all(values <= expectedRange[1])
+        )
+        self.assertTrue(all(abs(values - expectedValues) < EPSILON))
 
 
 if __name__ == "__main__":
