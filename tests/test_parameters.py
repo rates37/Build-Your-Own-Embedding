@@ -4,6 +4,7 @@ from BuildYourOwnEmbedding.parameters import (
     UniformRangeParameter,
     RandomRangeParameter,
     ConstantParameter,
+    FixedParameterSet,
 )
 
 EPSILON = 1e-6
@@ -11,7 +12,7 @@ EPSILON = 1e-6
 
 class TestParameters(unittest.TestCase):
 
-    def test_uniform_range_parameter(self):
+    def test_uniform_range_parameter(self) -> None:
 
         # Test 1:
         minVal, maxVal = 0, 1
@@ -72,7 +73,7 @@ class TestParameters(unittest.TestCase):
         )
         self.assertTrue(all(abs(values - expectedValues) < EPSILON))
 
-    def test_random_range_parameter(self):
+    def test_random_range_parameter(self) -> None:
 
         # Test 1:
         minVal, maxVal = 0, 1
@@ -113,7 +114,7 @@ class TestParameters(unittest.TestCase):
             np.all(values >= expectedRange[0]) and np.all(values <= expectedRange[1])
         )
 
-    def test_constant_parameter(self):
+    def test_constant_parameter(self) -> None:
         # Test 1:
         value = 0.5
         param = ConstantParameter(value=value)
@@ -134,6 +135,39 @@ class TestParameters(unittest.TestCase):
         values = param.get_values()
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], value)
+
+    def test_fixed_parameter(self) -> None:
+
+        # Test 1:
+        originalValues = [1, 2, 3, 4]
+        param = FixedParameterSet(values=originalValues)
+        values = param.get_values()
+        self.assertEqual(len(values), len(originalValues))
+        self.assertTrue(sum(abs(np.array(values) - np.array(originalValues))) < EPSILON)
+
+        # Test 2:
+        originalValues = np.array([1, 2, 3, 4])
+        param = FixedParameterSet(values=originalValues)
+        values = param.get_values()
+        self.assertEqual(len(values), len(originalValues))
+        self.assertTrue(sum(abs(np.array(values) - np.array(originalValues))) < EPSILON)
+
+        # Test 3:
+        originalValues = [
+            0.43209799,
+            0.61502947,
+            0.01217385,
+            0.84063715,
+            0.14213936,
+            0.21388344,
+            0.41052122,
+            0.74804918,
+            0.11104376,
+        ]
+        param = FixedParameterSet(values=originalValues)
+        values = param.get_values()
+        self.assertEqual(len(values), len(originalValues))
+        self.assertTrue(sum(abs(np.array(values) - np.array(originalValues))) < EPSILON)
 
 
 if __name__ == "__main__":
