@@ -5,6 +5,8 @@ from BuildYourOwnEmbedding.functional import (
     manhattan_distance,
     euclidian_distance,
     cosine_similarity,
+    mutual_information,
+    fisher_information,
 )
 
 EPSILON = 1e-6
@@ -161,3 +163,30 @@ class TestFunctional(unittest.TestCase):
         x2 = np.array([1, 2])
         with self.assertRaises(ValueError):
             cosine_similarity(x1, x2)
+
+    # mutual_information tests:
+
+    def test_mutual_information_uniform_response(self):
+        stimulus = np.array([0.1, 0.2, 0.3, 0.4])
+        response = np.array([0.25, 0.25, 0.25, 0.25])  # Uniform distribution
+        result = mutual_information(stimulus, response)
+        self.assertAlmostEqual(
+            result, 0, msg="Mutual information should be 0 for a uniform response"
+        )
+
+    def test_mutual_information_non_uniform_response(self):
+        stimulus = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
+        response = np.array([0.0, 0.25, 0.5, 0.25, 0])  # Uniform distribution
+        result = mutual_information(stimulus, response)
+        expectedResult = 1.0549201679
+        self.assertAlmostEqual(result, expectedResult)
+
+    def test_mutual_information_invalid_input(self):
+        # Test mutual information with differently shaped inputs
+        stimulus = np.array([0.1, 0.2])  # Does not sum to 1
+        response = np.array([0.4, 0.5, 0.1])
+        with self.assertRaises(
+            ValueError,
+            msg="Mutual information should raise ValueError if inputs are not same shape",
+        ):
+            mutual_information(stimulus, response)
