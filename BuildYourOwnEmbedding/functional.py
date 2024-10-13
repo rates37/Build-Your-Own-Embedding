@@ -156,7 +156,7 @@ def plot_rdm(
 
 
 ##! =====================================
-##!             Metrics:
+##!       Dimensionality Reduction:
 ##! =====================================
 def mds(dissimilarityMatrix: npt.NDArray, nComponents: int = 3) -> npt.NDArray:
     """Perform classical Multidimensional Scaling (MDS) on a dissimilarity matrix.
@@ -298,14 +298,14 @@ def fisher_information(curves: npt.NDArray) -> npt.NDArray:
 
 
 def mutual_information(
-    response: npt.NDArray, stimulus: npt.NDArray, integrationPrecision: int = 1000
+    response: npt.NDArray,
+    stimulus: npt.NDArray,
 ) -> np.number:
     """Computes the mutual information between a single neural response and its stimulus.
 
     Args:
         response (npt.NDArray): Neural response with shape (dim1, dim2, ..., dimN).
         stimulus (npt.NDArray): Corresponding stimulus with shape (dim1, dim2, ..., dimN).
-        integrationPrecision (int, optional): Number of steps to use in integration. Defaults to 1000.
 
     Raises:
         ValueError: If the stimulus and response are different dimensions.
