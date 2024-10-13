@@ -190,3 +190,82 @@ class TestFunctional(unittest.TestCase):
             msg="Mutual information should raise ValueError if inputs are not same shape",
         ):
             mutual_information(stimulus, response)
+
+    # fisher information tests:
+
+    def test_fisher_information_1d(self):
+        # Test Fisher Information with a 1D set of tuning curves
+        curves = np.array([[0.1, 0.2, 0.3, 0.4], [0.2, 0.3, 0.4, 0.5]])
+        result = fisher_information(curves)
+        expectedResult = np.array([0.02, 0.02, 0.02, 0.02])
+        self.assertEqual(
+            result.shape,
+            (4,),
+            msg="Fisher information result shape should match the response dimension",
+        )
+        self.assertTrue(
+            np.all(result >= 0), msg="Fisher information should be non-negative"
+        )
+        self.assertTrue(np.allclose(result, expectedResult, atol=EPSILON))
+
+    def test_fisher_information_2d(self):
+        # Test Fisher Information with a 2D tuning curve
+        curves = np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.2, 0.3], [0.4, 0.5]]])
+        result = fisher_information(curves)
+        expectedResult = np.array([[0.1, 0.1], [0.1, 0.1]])
+        self.assertEqual(
+            result.shape,
+            (2, 2),
+            msg="Fisher information shape should match the input spatial dimensions",
+        )
+        self.assertTrue(
+            np.all(result >= 0), msg="Fisher information should be non-negative"
+        )
+        self.assertTrue(np.allclose(result, expectedResult, atol=EPSILON))
+
+    def test_fisher_information_3d(self):
+        # Test Fisher Information with a 3D tuning curve
+        curves = np.random.rand(3, 4, 4, 4)  # 3 tuning curves over a 4x4x4 space
+        result = fisher_information(curves)
+        self.assertEqual(
+            result.shape,
+            (4, 4, 4),
+            msg="Fisher information shape should match the input spatial dimensions",
+        )
+        self.assertTrue(
+            np.all(result >= 0), msg="Fisher information should be non-negative"
+        )
+        self.assertTrue(
+            np.isfinite(result).all(),
+            msg="Fisher information should return finite values",
+        )
+
+    def test_fisher_information_invalid_input(self):
+        # Test Fisher Information with invalid input (e.g., fewer than 2 curves)
+        curves = np.array([0.1, 0.2, 0.3])  # Only 1 curve
+        with self.assertRaises(
+            ValueError,
+            msg="Fisher information should raise ValueError for input with dimensionality lower than 2",
+        ):
+            fisher_information(curves)
+
+    def test_fisher_information_high_values(self):
+        # Test Fisher Information with high tuning curve values
+        curves = np.array(
+            [[1000, 2000, 3000], [1500, 2500, 3500]]
+        )  # 2 tuning curves with large values
+        result = fisher_information(curves)
+        expectedResult = np.array([2000000.0, 2000000.0, 2000000.0])
+        self.assertEqual(
+            result.shape,
+            (3,),
+            msg="Fisher information result shape should match the response dimension",
+        )
+        self.assertTrue(
+            np.all(result >= 0), msg="Fisher information should be non-negative"
+        )
+        self.assertTrue(np.allclose(result, expectedResult, atol=EPSILON))
+
+
+if __name__ == "__main__":
+    unittest.main()
