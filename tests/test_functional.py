@@ -176,7 +176,7 @@ class TestFunctional(unittest.TestCase):
 
     def test_mutual_information_non_uniform_response(self):
         stimulus = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
-        response = np.array([0.0, 0.25, 0.5, 0.25, 0])  # Uniform distribution
+        response = np.array([0.0, 0.25, 0.5, 0.25, 0])
         result = mutual_information(stimulus, response)
         expectedResult = 1.0549201679
         self.assertAlmostEqual(result, expectedResult)
