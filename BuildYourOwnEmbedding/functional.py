@@ -260,15 +260,16 @@ def pca(matrix: npt.NDArray, nComponents) -> npt.NDArray:
 ##! =====================================
 ##!             Information:
 ##! =====================================
-def fisher_information(curves: npt.NDArray) -> npt.NDArray:
+def fisher_information(curves: Union[npt.NDArray, "ResponseSet"]) -> npt.NDArray:
     """Calculates the Fisher Information for a set of tuning curves.
 
     This function supports both 1-D and arbitrary-dimensional tuning curves
 
     Args:
-        curves (npt.NDArray): A numpy array of the shape (numCurves, dim1, dim2,
-        ..., dimN) representing the tuning curves, where `numCurves` is the number
-        of curves and `dim1, dim2, ..., dimN` are the dimensions of each response.
+        curves (Union[npt.NDArray, 'ResponseSet']): A numpy array of the shape
+        (numCurves, dim1, dim2,..., dimN) representing the tuning curves, where
+        `numCurves` is the number of curves and `dim1, dim2, ..., dimN` are the
+        dimensions of each response. Otherwise can be a ResponseSet object.
 
     Raises:
         ValueError: If the dimensionality of `curves` is not greater than a 2-dimensional
@@ -278,6 +279,8 @@ def fisher_information(curves: npt.NDArray) -> npt.NDArray:
         npt.NDArray: A numpy array representing the FI values, with shape (dim1, dim2,
         ..., dimN) for the input curves.
     """
+    if "ResponseSet" in str(curves.__class__):
+        curves = np.stack([r.response for r in curves.responses], axis=0)
     if len(curves.shape) < 2:
         raise ValueError("curves must be at least two dimensions")
     if len(curves.shape) == 2:
@@ -298,14 +301,15 @@ def fisher_information(curves: npt.NDArray) -> npt.NDArray:
 
 
 def mutual_information(
-    response: npt.NDArray,
-    stimulus: npt.NDArray,
+    response: Union[npt.NDArray, "ResponseData"],
+    stimulus: Union[npt.NDArray, None] = None,
 ) -> np.number:
     """Computes the mutual information between a single neural response and its stimulus.
 
     Args:
-        response (npt.NDArray): Neural response with shape (dim1, dim2, ..., dimN).
-        stimulus (npt.NDArray): Corresponding stimulus with shape (dim1, dim2, ..., dimN).
+        response (Union[npt.NDArray, 'ResponseData']): Neural response with shape (dim1, dim2, ..., dimN).
+        stimulus (Union[npt.NDArray, None]): Corresponding stimulus with shape (dim1, dim2, ..., dimN).
+            Can be None if response is a ResponseData object.
 
     Raises:
         ValueError: If the stimulus and response are different dimensions.
@@ -313,6 +317,12 @@ def mutual_information(
     Returns:
         np.number: The mutual information between the response and the stimulus.
     """
+    if "ResponseData" in str(response.__class__):
+        response, stimulus = response.response, response.x
+    else:
+        if stimulus is None:
+            raise ValueError("Stimulus cannot be None")
+
     if response.shape != stimulus.shape:
         raise ValueError("Response and Stimulus must have the same dimensions")
 
