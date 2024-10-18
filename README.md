@@ -46,7 +46,7 @@ neural_response = responseManager.generate_responses(x, noiseLevel=0)
 
 ## Documentation
 
-Full documentation is available [here](https://google.com), including examples. You can generate the documentation locally using Sphinx:
+Full documentation is available [here](https://rates37.github.io/build_your_own_embedding/), including examples. You can generate the documentation locally using Sphinx:
 
 ```bash
 cd docs
