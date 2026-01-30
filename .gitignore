@@ -162,3 +162,5 @@ cython_debug/
 */old/*
 
 media
+
+**.DS_STORE
