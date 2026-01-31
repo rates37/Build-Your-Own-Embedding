@@ -1,11 +1,13 @@
 import unittest
+
 import numpy as np
+
 from BuildYourOwnEmbedding.parameters import (
-    UniformRangeParameter,
-    RandomRangeParameter,
     ConstantParameter,
     FixedParameterSet,
     LogRangeParameter,
+    RandomRangeParameter,
+    UniformRangeParameter,
 )
 
 EPSILON = 1e-6

@@ -1,13 +1,14 @@
 import unittest
+
 import numpy as np
-from BuildYourOwnEmbedding.functional import (
+
+from BuildYourOwnEmbedding.metrics import (
+    cosine_similarity,
+    euclidean_distance,
     inverse_correlation,
     manhattan_distance,
-    euclidian_distance,
-    cosine_similarity,
-    mutual_information,
-    fisher_information,
 )
+from BuildYourOwnEmbedding.metrics.information import fisher_information, mutual_information
 
 EPSILON = 1e-6
 
@@ -92,7 +93,7 @@ class TestFunctional(unittest.TestCase):
     def test_euclidean_distance_identical_vectors(self):
         x1 = np.array([1, 2, 3])
         x2 = np.array([1, 2, 3])
-        result = euclidian_distance(x1, x2)
+        result = euclidean_distance(x1, x2)
         self.assertAlmostEqual(
             result,
             0,
@@ -102,7 +103,7 @@ class TestFunctional(unittest.TestCase):
     def test_euclidean_distance_simple_case(self):
         x1 = np.array([1, 2, 3])
         x2 = np.array([4, 6, 8])
-        result = euclidian_distance(x1, x2)
+        result = euclidean_distance(x1, x2)
         expected = np.linalg.norm([3, 4, 5])
         self.assertAlmostEqual(
             result,
@@ -113,7 +114,7 @@ class TestFunctional(unittest.TestCase):
     def test_euclidean_distance_with_negative_values(self):
         x1 = np.array([1, -2, 3])
         x2 = np.array([-1, 2, -3])
-        result = euclidian_distance(x1, x2)
+        result = euclidean_distance(x1, x2)
         expected = np.linalg.norm([-2, 4, -6])
         self.assertAlmostEqual(
             result,
@@ -125,7 +126,7 @@ class TestFunctional(unittest.TestCase):
         x1 = np.array([1, 2, 3])
         x2 = np.array([1, 2])
         with self.assertRaises(ValueError):
-            euclidian_distance(x1, x2)
+            euclidean_distance(x1, x2)
 
     # Cosine Similarity Tests
     def test_cosine_similarity_identical_vectors(self):
