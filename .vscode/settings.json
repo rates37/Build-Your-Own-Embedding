@@ -1,6 +1,35 @@
 {
     "cSpell.words": [
+        "analysing",
+        "cbar",
+        "cmap",
+        "colorbar",
+        "facecolor",
+        "figsize",
+        "imshow",
         "Initialises",
-        "overriden"
+        "lightgoldenrodyellow",
+        "localised",
+        "Maclaurin",
+        "Mises",
+        "mplcursors",
+        "mplot",
+        "overriden",
+        "RGTM",
+        "surfaceplot",
+        "toolkits",
+        "valinit",
+        "valmax",
+        "valmin",
+        "viridis",
+        "visualisations",
+        "visualising",
+        "vmax",
+        "vmin",
+        "xlabel",
+        "xticks",
+        "ylabel",
+        "yticks",
+        "zlabel"
     ]
 }
